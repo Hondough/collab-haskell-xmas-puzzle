@@ -1,0 +1,17 @@
+/.stack-work
+/target
+/classes
+/checkouts
+pom.xml
+pom.xml.asc
+*.jar
+*.class
+/.lein-*
+/.nrepl-port
+/.settings
+victims.json
+new-transactions.json
+foo
+stack.aux
+stack.hp
+stack.ps
