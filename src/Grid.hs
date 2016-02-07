@@ -1,11 +1,13 @@
-module Grid (
-  Square(B,W)
-  ,drawLine
-  ,mkLine
-  ,inc
-  ,rows
-  ,cols
-) where
+module Grid
+-- (
+--   Square(B,W)
+--   ,drawLine
+--   ,mkLine
+--   ,inc
+--   ,rows
+--   ,cols
+-- )
+where
 
 import qualified Data.List as L
 
@@ -40,8 +42,24 @@ mkLine [x] = replicate x B
 -- is another white block. all runs of black blocks are maintained.
 inc :: Line -> [Line]
 inc xs = [W : xs] ++  fill xs ++ [xs ++ [W]] where
-  fill xs = foldl (\t v -> (take v xs ++ [W] ++ drop v xs) : t) [] (blanks xs)
+  fill xs = L.foldl' (\t v -> (take v xs ++ [W] ++ drop v xs) : t) [] (blanks xs)
   blanks = L.elemIndices W
+
+bogoSolutions :: Int -> Line -> [Line]
+bogoSolutions len line
+  | length line >= len = [line]
+  | otherwise = last $ take (len - length line + 1) $ iterate (concatMap inc) [line]
+
+solutions :: Int -> [Line] -> [Line]
+solutions _ [[]] = [[]]
+solutions len xs
+  | length (head xs) >= len = xs
+  | otherwise = solutions len (concatMap inc xs)
+
+rowLines = map mkLine rows
+colLines = map mkLine cols
+
+-- let foo = mkLine [2,1]
 
 rows :: [[Int]]
 rows = [
