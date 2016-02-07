@@ -1,7 +1,7 @@
 module Grid (
   Square(B,W)
   ,drawLine
-  ,mkSquares
+  ,mkLine
   ,inc
   ,rows
   ,cols
@@ -28,17 +28,20 @@ type Line = [Square]
 drawLine :: Line -> String
 drawLine = foldl (\t v -> t ++ show v) ""
 
--- turn a list of runs into a list of Squares
+-- turn a list of runs into a Line (list of Squares)
 -- a run is an unbroken sequence of black Squares
-mkSquares :: [Int] -> [Square]
-mkSquares [] = []
-mkSquares (x:y:xs) = replicate x B ++ [W] ++ mkSquares (y:xs)
-mkSquares [x] = replicate x B
+mkLine :: [Int] -> Line
+mkLine [] = []
+mkLine (x:y:xs) = replicate x B ++ [W] ++ mkLine (y:xs)
+mkLine [x] = replicate x B
 
--- grow a line by a single white block
+-- grow a line by a single white block in all available slots
+-- you can add a white at the head, on the end and wherever there
+-- is another white block. all runs of black blocks are maintained.
 inc :: Line -> [Line]
-inc xs = [W : xs, fill xs, xs ++ [W]] where
-  fill xs = undefined --foldl (\t v -> if v == W) [] xs
+inc xs = [W : xs] ++  fill xs ++ [xs ++ [W]] where
+  fill xs = foldl (\t v -> (take v xs ++ [W] ++ drop v xs) : t) [] (blanks xs)
+  blanks = L.elemIndices W
 
 rows :: [[Int]]
 rows = [
