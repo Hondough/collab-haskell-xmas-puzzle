@@ -50,11 +50,12 @@ inc xs = [W : xs] ++  fill xs ++ [xs ++ [W]] where
   fill xs = L.foldl' (\t v -> (take v xs ++ [W] ++ drop v xs) : t) [] (blanks xs)
   blanks = L.elemIndices W
 
-pinc :: Line -> [Line]
-pinc xs = L.foldl' (\t (y:ys) -> undefined) [] runs where
+inc2 :: Line -> [Line]
+inc2 xs = collect runs prepended appended [] where
+  collect (r:rs) (p:ps) (a:as) acc = undefined
   runs = L.group xs
-  prepended = map (W:) runs
-  appended = map (++ [W]) runs
+  prepended = map (\v@(h:t) -> if h == B then W : v else v) runs
+  appended = map (\v@(h:t) -> if h == B then v ++ [W] else v) runs
 {-
 λ: map (W:) $ L.group foo
 [[_,1,1],[_,_],[_,1]]
@@ -65,6 +66,15 @@ pinc xs = L.foldl' (\t (y:ys) -> undefined) [] runs where
 
  map (\v@(h:t) -> if h == B then (W:v) else v) $ L.group foo
 -}
+
+-- add to all the leading edge transitions
+inc3 :: Line -> [Line]
+inc3 xs = fill xs [[]] where
+  fill [] acc = [xs ++ [W]] : acc
+  fill [B,B] acc = (xs ++ [B,B]) : acc
+  fill [W,B] acc = (xs ++ [W,W,B]) : acc
+  fill [x,y] acc = (xs ++ [x,y]) : acc
+  fill (x:y:xs) acc = undefined
 
 bogoSolutions :: Int -> Line -> [Line]
 bogoSolutions len line
