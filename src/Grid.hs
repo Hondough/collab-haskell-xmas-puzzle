@@ -62,6 +62,8 @@ pinc xs = L.foldl' (\t (y:ys) -> undefined) [] runs where
 λ: map (++ [W]) $ L.group foo
 [[1,1,_],[_,_],[1,_]]
 (0.02 secs, 0 bytes)
+
+ map (\v@(h:t) -> if h == B then (W:v) else v) $ L.group foo
 -}
 
 bogoSolutions :: Int -> Line -> [Line]
