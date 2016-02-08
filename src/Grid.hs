@@ -16,13 +16,18 @@ data Square = B | W
 
 -- make it easier to see
 instance Show Square where
-  show B = "*"
-  show W = "."
+  show B = "1"
+  show W = "_"
 
 instance Eq Square where
   B == B = True
   W == W = True
   _ == _ = False
+
+instance Ord Square where
+  compare W B = GT
+  compare B W = LT
+  compare _ _ = EQ
 
 -- just a helper to simplify code a bit
 type Line = [Square]
