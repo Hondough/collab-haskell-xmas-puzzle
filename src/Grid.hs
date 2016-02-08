@@ -69,12 +69,7 @@ inc2 xs = collect runs prepended appended [] where
 
 -- add to all the leading edge transitions
 inc3 :: Line -> [Line]
-inc3 xs = fill xs [[]] where
-  fill [] acc = [xs ++ [W]] : acc
-  fill [B,B] acc = (xs ++ [B,B]) : acc
-  fill [W,B] acc = (xs ++ [W,W,B]) : acc
-  fill [x,y] acc = (xs ++ [x,y]) : acc
-  fill (x:y:xs) acc = undefined
+inc3 xs = undefined
 
 bogoSolutions :: Int -> Line -> [Line]
 bogoSolutions len line
