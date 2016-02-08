@@ -50,6 +50,20 @@ inc xs = [W : xs] ++  fill xs ++ [xs ++ [W]] where
   fill xs = L.foldl' (\t v -> (take v xs ++ [W] ++ drop v xs) : t) [] (blanks xs)
   blanks = L.elemIndices W
 
+pinc :: Line -> [Line]
+pinc xs = L.foldl' (\t (y:ys) -> undefined) [] runs where
+  runs = L.group xs
+  prepended = map (W:) runs
+  appended = map (++ [W]) runs
+{-
+λ: map (W:) $ L.group foo
+[[_,1,1],[_,_],[_,1]]
+(0.03 secs, 0 bytes)
+λ: map (++ [W]) $ L.group foo
+[[1,1,_],[_,_],[1,_]]
+(0.02 secs, 0 bytes)
+-}
+
 bogoSolutions :: Int -> Line -> [Line]
 bogoSolutions len line
   | length line >= len = [line]
@@ -64,7 +78,8 @@ solutions len xs
 rowLines = map mkLine rows
 colLines = map mkLine cols
 
--- let foo = mkLine [2,1]
+foo :: Line
+foo = mkLine [2,1]
 
 rows :: [[Int]]
 rows = [
