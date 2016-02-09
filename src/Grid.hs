@@ -50,61 +50,37 @@ inc xs = [W : xs] ++  fill xs ++ [xs ++ [W]] where
   fill xs = L.foldl' (\t v -> (take v xs ++ [W] ++ drop v xs) : t) [] (blanks xs)
   blanks = L.elemIndices W
 
-inc2 :: Line -> [Line]
-inc2 xs = L.foldl' addSpc [] (L.group xs) where
-  addSpc acc v@(x:xs)
-    | null acc = (W:v):acc
-    | x == W = (W:v):acc
-    | otherwise = v:acc
-
-inc3 :: Line -> [Line]
-inc3 xs = [W : xs] ++  fill xs ++ [xs ++ [W]] where
-  fill xs = L.foldl' (\t v -> (take v xs ++ [W] ++ drop v xs) : t) [] (edges xs)
+inc5 :: Line -> [Line]
+inc5 [] = [[W]]
+inc5 [x] = if x == W then [[W,W]] else [[W,x], [x,W]]
+inc5 [W,W] = [[W,W,W]]
+inc5 [x,y] = [[W,x,y], [x,y,W]]
+inc5 xs = bookEnds xs ++ L.foldl' (\t v -> concat (addW v groups) : t) [] slots where
+  groups = L.group xs
+  slots = findSlots groups
+  addW n xs = take n xs ++  [W:(xs !! n)] ++ drop (n+1) xs
 
 findSlots :: [Line] -> [Int]
 findSlots groups = searchLine groups 0 [] where
   searchLine [] _ acc = acc
   searchLine (l:ls) n acc
-    | null acc = searchLine ls (n+1) [0]
     | head l == W = searchLine ls (n+1) (n:acc)
     | otherwise = searchLine ls (n+1) acc
 
-inc4 :: Line -> [Line]
-inc4 xs = L.foldl' (\t v -> concat (addW v groups) : t) [xs ++ [W]] slots where
-  groups = L.group xs
-  slots = findSlots groups
-  addW n xs = take n xs ++  [W:(xs !! n)] ++ drop (n+1) xs
+bookEnds xs = filter (not . null) [lStart, lEnd] where
+  lStart = if head xs == B then W : xs else []
+  lEnd = if last xs == B then xs ++ [W] else []
 
+solveLine :: Int -> Line -> [Line]
+solveLine n ln = solutions n [ln] where
+  solutions _ [[]] = [[]]
+  solutions len xs
+    | length (head xs) >= len = xs
+    | otherwise = solutions len (concatMap inc5 xs)
 
-{-
-λ: map (W:) $ L.group foo
-[[_,1,1],[_,_],[_,1]]
-(0.03 secs, 0 bytes)
-λ: map (++ [W]) $ L.group foo
-[[1,1,_],[_,_],[1,_]]
-(0.02 secs, 0 bytes)
-
- map (\v@(h:t) -> if h == B then (W:v) else v) $ L.group foo
--}
-
--- find leading edge transitions
-edges :: Line -> [Int]
-edges xs = search xs 0 [] where
-  search xs n acc
-    | length xs < 2 = acc
-    | length xs == 2 =
-      case xs of [W,B] -> (n + 1) : acc
-                 [B,W] -> (n + 1) : acc
-                 [_,_] -> acc
-  search (W : B : xs) n acc = search (B : xs) (n + 1) $ (n + 1) : acc
-  search (B : W : xs) n acc = search (W : xs) (n + 1) $ (n + 1) : acc
-  search (x : xs) n acc = search xs (n + 1) acc
-
-solutions :: Int -> [Line] -> [Line]
-solutions _ [[]] = [[]]
-solutions len xs
-  | length (head xs) >= len = xs
-  | otherwise = solutions len (concatMap inc3 xs)
+solveLine' :: Int -> Line -> [Line]
+solveLine' n ln = last $ takeWhile (\x -> length (last x) <= n) $
+  iterate (concatMap inc5) [ln]
 
 rowLines = map mkLine rows
 colLines = map mkLine cols
