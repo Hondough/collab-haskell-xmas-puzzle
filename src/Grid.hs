@@ -50,9 +50,20 @@ inc xs = [W : xs] ++  fill xs ++ [xs ++ [W]] where
   fill xs = L.foldl' (\t v -> (take v xs ++ [W] ++ drop v xs) : t) [] (blanks xs)
   blanks = L.elemIndices W
 
+inc3 :: Line -> [Line]
+inc3 xs = [W : xs] ++  fill xs ++ [xs ++ [W]] where
+  fill xs = L.foldl' (\t v -> (take v xs ++ [W] ++ drop v xs) : t) [] (edges xs)
+
 inc2 :: Line -> [Line]
-inc2 xs = collect runs prepended appended [] where
-  collect (r:rs) (p:ps) (a:as) acc = undefined
+inc2 xs = collect runs (length runs - 1) [] where
+  collect _ n acc | n < 0 = acc
+  collect rs n acc =
+    if head (rs !! n) == B then
+      collect rs (n - 1)
+        [concat (take n rs) ++ (prepended !! n) ++ concat (drop (n + 1) rs)
+        , concat (take n rs) ++ (appended !! n) ++ concat (drop (n + 1) rs)]
+        ++ acc
+    else acc
   runs = L.group xs
   prepended = map (\v@(h:t) -> if h == B then W : v else v) runs
   appended = map (\v@(h:t) -> if h == B then v ++ [W] else v) runs
@@ -67,14 +78,21 @@ inc2 xs = collect runs prepended appended [] where
  map (\v@(h:t) -> if h == B then (W:v) else v) $ L.group foo
 -}
 
--- add to all the leading edge transitions
-inc3 :: Line -> [Line]
-inc3 xs = undefined
+-- find leading edge transitions
+edges :: Line -> [Int]
+edges xs = search xs 0 [] where
+  search xs n acc
+    | length xs < 2 = acc
+    | length xs == 2 =
+      case xs of [W,B] -> (n + 1) : acc
+                 [_,_] -> acc
+  search (W : B : xs) n acc = search (B : xs) (n + 1) $ (n + 1) : acc
+  search (x : xs) n acc = search xs (n + 1) acc
 
 bogoSolutions :: Int -> Line -> [Line]
 bogoSolutions len line
   | length line >= len = [line]
-  | otherwise = last $ take (len - length line + 1) $ iterate (concatMap inc) [line]
+  | otherwise = last $ take (len - length line + 1) $ iterate (concatMap inc2) [line]
 
 solutions :: Int -> [Line] -> [Line]
 solutions _ [[]] = [[]]
