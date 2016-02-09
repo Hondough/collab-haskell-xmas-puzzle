@@ -50,23 +50,32 @@ inc xs = [W : xs] ++  fill xs ++ [xs ++ [W]] where
   fill xs = L.foldl' (\t v -> (take v xs ++ [W] ++ drop v xs) : t) [] (blanks xs)
   blanks = L.elemIndices W
 
+inc2 :: Line -> [Line]
+inc2 xs = L.foldl' addSpc [] (L.group xs) where
+  addSpc acc v@(x:xs)
+    | null acc = (W:v):acc
+    | x == W = (W:v):acc
+    | otherwise = v:acc
+
 inc3 :: Line -> [Line]
 inc3 xs = [W : xs] ++  fill xs ++ [xs ++ [W]] where
   fill xs = L.foldl' (\t v -> (take v xs ++ [W] ++ drop v xs) : t) [] (edges xs)
 
-inc2 :: Line -> [Line]
-inc2 xs = collect runs (length runs - 1) [] where
-  collect _ n acc | n < 0 = acc
-  collect rs n acc =
-    if head (rs !! n) == B then
-      collect rs (n - 1)
-        [concat (take n rs) ++ (prepended !! n) ++ concat (drop (n + 1) rs)
-        , concat (take n rs) ++ (appended !! n) ++ concat (drop (n + 1) rs)]
-        ++ acc
-    else acc
-  runs = L.group xs
-  prepended = map (\v@(h:t) -> if h == B then W : v else v) runs
-  appended = map (\v@(h:t) -> if h == B then v ++ [W] else v) runs
+findSlots :: [Line] -> [Int]
+findSlots groups = searchLine groups 0 [] where
+  searchLine [] _ acc = acc
+  searchLine (l:ls) n acc
+    | null acc = searchLine ls (n+1) [0]
+    | head l == W = searchLine ls (n+1) (n:acc)
+    | otherwise = searchLine ls (n+1) acc
+
+inc4 :: Line -> [Line]
+inc4 xs = L.foldl' (\t v -> concat (addW v groups) : t) [xs ++ [W]] slots where
+  groups = L.group xs
+  slots = findSlots groups
+  addW n xs = take n xs ++  [W:(xs !! n)] ++ drop (n+1) xs
+
+
 {-
 λ: map (W:) $ L.group foo
 [[_,1,1],[_,_],[_,1]]
@@ -85,26 +94,25 @@ edges xs = search xs 0 [] where
     | length xs < 2 = acc
     | length xs == 2 =
       case xs of [W,B] -> (n + 1) : acc
+                 [B,W] -> (n + 1) : acc
                  [_,_] -> acc
   search (W : B : xs) n acc = search (B : xs) (n + 1) $ (n + 1) : acc
+  search (B : W : xs) n acc = search (W : xs) (n + 1) $ (n + 1) : acc
   search (x : xs) n acc = search xs (n + 1) acc
-
-bogoSolutions :: Int -> Line -> [Line]
-bogoSolutions len line
-  | length line >= len = [line]
-  | otherwise = last $ take (len - length line + 1) $ iterate (concatMap inc2) [line]
 
 solutions :: Int -> [Line] -> [Line]
 solutions _ [[]] = [[]]
 solutions len xs
   | length (head xs) >= len = xs
-  | otherwise = solutions len (concatMap inc xs)
+  | otherwise = solutions len (concatMap inc3 xs)
 
 rowLines = map mkLine rows
 colLines = map mkLine cols
 
 foo :: Line
-foo = mkLine [2,1]
+foo = mkLine [2,1] -- [B,B,W,B]
+bar :: Line
+bar = [W,W,B,W,B,B,W,W]
 
 rows :: [[Int]]
 rows = [
