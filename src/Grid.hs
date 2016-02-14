@@ -50,37 +50,20 @@ inc xs = [W : xs] ++  fill xs ++ [xs ++ [W]] where
   fill xs = L.foldl' (\t v -> (take v xs ++ [W] ++ drop v xs) : t) [] (blanks xs)
   blanks = L.elemIndices W
 
-inc5 :: Line -> [Line]
-inc5 [] = [[W]]
-inc5 [x] = if x == W then [[W,W]] else [[W,x], [x,W]]
-inc5 [W,W] = [[W,W,W]]
-inc5 [x,y] = [[W,x,y], [x,y,W]]
-inc5 xs = bookEnds xs ++ L.foldl' (\t v -> concat (addW v groups) : t) [] slots where
-  groups = L.group xs
-  slots = findSlots groups
-  addW n xs = take n xs ++  [W:(xs !! n)] ++ drop (n+1) xs
+inc' :: Line -> [Line]
+inc' xs = L.foldl' addNoDup [W : xs, xs ++ [W]] (blanks xs) where
+  blanks = L.elemIndices W
+  addNoDup t v = let newStr = take v xs ++ [W] ++ drop v xs in
+    if newStr `elem` t then t else newStr : t
 
-findSlots :: [Line] -> [Int]
-findSlots groups = searchLine groups 0 [] where
-  searchLine [] _ acc = acc
-  searchLine (l:ls) n acc
-    | head l == W = searchLine ls (n+1) (n:acc)
-    | otherwise = searchLine ls (n+1) acc
-
-bookEnds xs = filter (not . null) [lStart, lEnd] where
-  lStart = if head xs == B then W : xs else []
-  lEnd = if last xs == B then xs ++ [W] else []
+rmDupInc = L.nub . concatMap inc'
 
 solveLine :: Int -> Line -> [Line]
-solveLine n ln = solutions n [ln] where
-  solutions _ [[]] = [[]]
-  solutions len xs
+solveLine len ln = solutions [ln] where
+  solutions [[]] = [[]]
+  solutions xs
     | length (head xs) >= len = xs
-    | otherwise = solutions len (concatMap inc5 xs)
-
-solveLine' :: Int -> Line -> [Line]
-solveLine' n ln = last $ takeWhile (\x -> length (last x) <= n) $
-  iterate (concatMap inc5) [ln]
+    | otherwise = solutions $ rmDupInc xs
 
 rowLines = map mkLine rows
 colLines = map mkLine cols
