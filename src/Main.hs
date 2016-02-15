@@ -8,10 +8,10 @@ import Grid
 
 main :: IO ()
 main = do
-  args <- getArgs
-  let n = if null args then 0 else (read (head args) :: Int)
-  let len = length $ solveLine 25 $ rowLines !! n
-  putStrLn $ "Row " ++ show n ++ " has " ++ show len ++ " solutions"
+  mapM_ (printSolutions "Row") rowLines
+  mapM_ (printSolutions "Col") colLines where
+    printSolutions lbl ln = putStrLn $ lbl ++ " " ++ drawLine ln ++ " has " ++
+                            show (length $ solveLine 25 ln) ++ " solutions"
 
 rowLines = map mkLine rows
 colLines = map mkLine cols
