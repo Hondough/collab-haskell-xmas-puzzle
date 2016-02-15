@@ -1,13 +1,17 @@
 module Main where
 
+import System.Environment
+import qualified Data.List as L
 import Grid
 
 -- http://www.gchq.gov.uk/press_and_media/news_and_features/Pages/Directors-Christmas-puzzle-2015.aspx
 
 main :: IO ()
 main = do
-  let n = length $ solveLine 25 $ head rowLines
-  putStrLn $ "First row has " ++ show n ++ " solutions"
+  args <- getArgs
+  let n = if null args then 0 else (read (head args) :: Int)
+  let len = length $ solveLine 25 $ rowLines !! n
+  putStrLn $ "Row " ++ show n ++ " has " ++ show len ++ " solutions"
 
 rowLines = map mkLine rows
 colLines = map mkLine cols
