@@ -9,6 +9,7 @@ module Grid
 where
 
 import qualified Data.List as L
+import qualified Data.List.Extra as LX
 
 -- a Square can be either black or white
 data Square = B | W
@@ -50,7 +51,7 @@ inc xs = L.foldl' addNoDup [W : xs, xs ++ [W]] (blanks xs) where
   addNoDup t v = let newStr = take v xs ++ [W] ++ drop v xs in
     if newStr `elem` t then t else newStr : t
 
-rmDupInc = L.nub . concatMap inc
+rmDupInc = LX.nubOrd . concatMap inc
 
 -- create a list of solutions by growing the previous list of solutions
 -- until we reach the desired length for a solution line
