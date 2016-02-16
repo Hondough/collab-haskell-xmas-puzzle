@@ -1,4 +1,5 @@
 module Grid
+{-
 (
   Square(B,W)
   ,Line
@@ -6,6 +7,7 @@ module Grid
   ,mkLine
   ,solveLine
 )
+-}
 where
 
 import qualified Data.List as L
@@ -46,10 +48,13 @@ mkLine [x] = replicate x B
 -- you can add a white at the head, on the end and wherever there
 -- is another white block. all runs of black blocks are maintained.
 inc :: Line -> [Line]
-inc xs = L.foldl' addNoDup [W : xs, xs ++ [W]] (blanks xs) where
-  blanks = L.elemIndices W
-  addNoDup t v = let newStr = take v xs ++ [W] ++ drop v xs in
-    if newStr `elem` t then t else newStr : t
+inc xs = L.foldl' addWS [] indices ++ [xs ++ [W]] where
+  addWS acc n = (take n xs ++ [W] ++ drop n xs) : acc
+  indices = leadingEdge False 0 [] xs
+  leadingEdge _ _ acc [] = acc
+  leadingEdge inRun idx acc (x:xs)
+    | x == B = leadingEdge True (idx+1) (if not inRun then idx:acc else acc) xs
+    | otherwise = leadingEdge False (idx+1) acc xs
 
 rmDupInc = LX.nubOrd . concatMap inc
 
