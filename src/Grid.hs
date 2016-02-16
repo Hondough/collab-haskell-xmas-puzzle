@@ -38,7 +38,7 @@ drawLine :: Line -> String
 drawLine = foldl (\t v -> t ++ show v) ""
 
 -- turn a list of runs into a Line (list of Squares)
--- a run is an unbroken sequence of black Squares
+-- a "run" is an unbroken sequence of black Squares
 mkLine :: [Int] -> Line
 mkLine [] = []
 mkLine (x:y:xs) = replicate x B ++ [W] ++ mkLine (y:xs)
@@ -51,6 +51,7 @@ inc :: Line -> [Line]
 inc xs = L.foldl' addWS [] indices ++ [xs ++ [W]] where
   addWS acc n = (take n xs ++ [W] ++ drop n xs) : acc
   indices = leadingEdge False 0 [] xs
+  -- find indices for the start of each "run"
   leadingEdge _ _ acc [] = acc
   leadingEdge inRun idx acc (x:xs)
     | x == B = leadingEdge True (idx+1) (if not inRun then idx:acc else acc) xs
