@@ -63,7 +63,7 @@ rmDupInc :: [Line] -> [Line]
 rmDupInc = LX.nubOrd . concatMap inc
 
 consistent :: Line -> Line -> Bool
-consistent ln mustBlack = and $ zipWith (\a b -> b == W || a == b) ln mustBlack
+consistent ln mustBlack = and $ zipWith (\a b -> a == W || a == b) ln mustBlack
 
 -- create a list of solutions by growing the previous list of solutions
 -- until we reach the desired length for a solution line

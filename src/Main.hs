@@ -14,6 +14,10 @@ main = do
                             show (length $ solveLine 25 ln) ++ " solutions"
 
 -- Some test data to play with
+fooc n = filter (consistent (preCols !! n)) $ solveLine 25 (mkLine $ cols !! n)
+barc n = solveLine 25 (mkLine $ cols !! n)
+baz n = (length (barc n), length (fooc n))
+
 foo :: Line
 foo = mkLine [2,1] -- [B,B,W,B]
 bar :: Line
