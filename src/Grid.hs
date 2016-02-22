@@ -12,6 +12,8 @@ where
 
 import qualified Data.List as L
 import qualified Data.List.Extra as LX
+import qualified Safe as SL
+import Data.Maybe
 
 -- a Square can be either black or white
 data Square = B | W
@@ -57,7 +59,11 @@ inc xs = L.foldl' addWS [] indices ++ [xs ++ [W]] where
     | x == B = leadingEdge True (idx+1) (if not inRun then idx:acc else acc) xs
     | otherwise = leadingEdge False (idx+1) acc xs
 
+rmDupInc :: [Line] -> [Line]
 rmDupInc = LX.nubOrd . concatMap inc
+
+consistent :: Line -> Line -> Bool
+consistent ln mustBlack = and $ zipWith (\a b -> b == W || a == b) ln mustBlack
 
 -- create a list of solutions by growing the previous list of solutions
 -- until we reach the desired length for a solution line
@@ -67,3 +73,9 @@ solveLine len ln = solutions [ln] where
   solutions xs
     | length (head xs) >= len = xs
     | otherwise = solutions $ rmDupInc xs
+
+nB :: Int -> Line
+nB = flip replicate B
+
+nW :: Int -> Line
+nW = flip replicate W
