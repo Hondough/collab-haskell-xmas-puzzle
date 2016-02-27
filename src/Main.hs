@@ -8,6 +8,15 @@ main :: IO ()
 main = do
   print "Hello"
 
+{-
+λ filter (== 0) $ map (moves.mkLine) rows
+[0,0]
+(0.00 secs, 0 bytes)
+λ filter (== 0) $ map (moves.mkLine) cols
+[0,0,0]
+(0.00 secs, 0 bytes)
+-}
+
 rows :: [[Int]]
 rows = [
   [7,3,1,1,7],
