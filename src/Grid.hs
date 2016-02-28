@@ -22,6 +22,8 @@ instance Ord Block where
   compare W B = LT
   compare _ _ = EQ
 
+data Run = Run Block Int deriving Show
+
 blockAt :: Int -> Int -> Grid -> Maybe Block
 blockAt row col grid = do
   mRow <- SL.atMay grid row
@@ -43,3 +45,6 @@ freeSpaces maxLen line = let len = maxLen - length line in
 
 moves :: Line -> Int
 moves = freeSpaces 25
+
+grow :: Line -> [Line]
+grow = undefined
