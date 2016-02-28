@@ -22,15 +22,11 @@ instance Ord Block where
   compare W B = LT
   compare _ _ = EQ
 
-data Run = Run Block Int deriving Show
-
+-- returns the block at (row,col), if any
 blockAt :: Int -> Int -> Grid -> Maybe Block
 blockAt row col grid = do
   mRow <- SL.atMay grid row
   SL.atMay mRow col
-
-run :: Int -> Block -> Line
-run = replicate
 
 -- turn a list of runs into a Line (list of Blocks)
 -- a "run" is an unbroken sequence of black Blocks
@@ -39,6 +35,8 @@ mkLine [] = []
 mkLine (x:y:xs) = run x B ++ [W] ++ mkLine (y:xs)
 mkLine [x] = run x B
 
+-- returns the number of free spaces we have to move blocks around within
+-- within the max length of a Line
 freeSpaces :: Int -> Line -> Int
 freeSpaces maxLen line = let len = maxLen - length line in
   if len < 0 then 0 else len
@@ -48,3 +46,8 @@ moves = freeSpaces 25
 
 grow :: Line -> [Line]
 grow = undefined
+
+data Run = Run Block Int deriving Show
+
+run :: Int -> Block -> Line
+run = replicate
