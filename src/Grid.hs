@@ -51,10 +51,14 @@ freeSpaces maxLen runs = if len < 0 then 0 else len where
 moves :: [Int] -> Int
 moves = freeSpaces 25
 
-grow :: Line -> Int -> [Line]
-grow line moves
+grow :: Int -> Line -> [Line]
+grow moves line
   | moves <= 0 = [line]
-  | otherwise = line : grow (W : line) (moves - 1)
+  | otherwise = line : grow (moves - 1) (W : line)
+
+-- this really needs to be something like iterate map
+growAll :: [Int] -> [Line]
+growAll runs = concatMap (\n -> grow (moves runs) (run n B)) runs where
 
 data Run = Run Block Int deriving Show
 
