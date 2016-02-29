@@ -36,16 +36,25 @@ mkLine (x:y:xs) = run x B ++ [W] ++ mkLine (y:xs)
 mkLine [x] = run x B
 
 -- returns the number of free spaces we have to move blocks around within
--- within the max length of a Line
-freeSpaces :: Int -> Line -> Int
-freeSpaces maxLen line = let len = maxLen - length line in
-  if len < 0 then 0 else len
+-- within the max length of a line corresponding to the Int list
+freeSpaces :: Int -> [Int] -> Int
+freeSpaces maxLen runs = if len < 0 then 0 else len where
+  len = maxLen - lineLen
+  lineLen = sum runs + length runs - 1
 
-moves :: Line -> Int
+-- returns the number of free spaces we have to move blocks around within
+-- within the max length of a Line
+-- freeSpaces :: Int -> Line -> Int
+-- freeSpaces maxLen line = let len = maxLen - length line in
+--   if len < 0 then 0 else len
+
+moves :: [Int] -> Int
 moves = freeSpaces 25
 
-grow :: Line -> [Line]
-grow = undefined
+grow :: Line -> Int -> [Line]
+grow line moves
+  | moves <= 0 = [line]
+  | otherwise = line : grow (W : line) (moves - 1)
 
 data Run = Run Block Int deriving Show
 
