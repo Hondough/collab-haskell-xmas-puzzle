@@ -57,8 +57,8 @@ grow moves line
   | otherwise = line : grow (moves - 1) (W : line)
 
 -- this really needs to be something like iterate map
-growAll :: [Int] -> [Line]
-growAll runs = concatMap (\n -> grow (moves runs) (run n B)) runs where
+growAll :: [Int] -> [[Line]]
+growAll runs = map (\n -> grow (moves runs) (run n B)) runs
 
 data Run = Run Block Int deriving Show
 

@@ -5,8 +5,7 @@ import Grid
 -- http://www.gchq.gov.uk/press_and_media/news_and_features/Pages/Directors-Christmas-puzzle-2015.aspx
 
 main :: IO ()
-main = do
-  print "Hello"
+main = mapM_ print $ growAll $ head rows
 
 {-
 λ filter (== 0) $ map (moves.mkLine) rows
