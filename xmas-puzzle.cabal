@@ -19,4 +19,5 @@ executable xmas-puzzle
   build-depends:       base >= 4.7 && < 5
                       ,extra
                       ,safe
+                      ,vector
   other-modules:       Grid

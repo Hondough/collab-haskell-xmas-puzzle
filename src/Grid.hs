@@ -1,5 +1,6 @@
 module Grid where
 
+import qualified Data.Vector as V
 import qualified Safe as SL
 import Control.Monad
 
@@ -42,10 +43,13 @@ mkLineData direction index runs = LineData {
 }
 
 -- returns the block at (row,col), if any
-blockAt :: Int -> Int -> Grid -> Maybe Block
-blockAt row col grid = do
-  mRow <- SL.atMay grid row
-  SL.atMay mRow col
+readBlock :: Int -> Int -> Grid -> Block
+readBlock row col grid = (grid !! row) !! col
+
+writeBlock :: Int -> Int -> Grid -> Grid
+writeBlock row col grid = V.toList $ vgrid V.// [(row, V.toList $ vRow V.// [(col, B)])] where
+  vgrid = V.fromList grid
+  vRow = V.fromList $ vgrid V.! row
 
 -- turn a list of runs into a Line (list of Blocks)
 -- a "run" is an unbroken sequence of black Blocks
