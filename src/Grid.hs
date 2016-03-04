@@ -4,10 +4,10 @@ import qualified Data.Vector as V
 import qualified Safe as SL
 import Control.Monad
 
-data Block = B | W
+data Block = B | W | U
 
-type Line = [Block]
-type Grid = [Line] --[[Block]]
+type Line = V.Vector Block
+type Grid = V.Vector Line --[[Block]]
 
 instance Show Block where
   show B = "1"
@@ -44,19 +44,19 @@ mkLineData direction index runs = LineData {
 
 -- returns the block at (row,col), if any
 readBlock :: Int -> Int -> Grid -> Block
-readBlock row col grid = (grid !! row) !! col
+readBlock row col grid = (grid V.! row) V.! col
 
 writeBlock :: Int -> Int -> Grid -> Grid
-writeBlock row col grid = V.toList $ vgrid V.// [(row, V.toList $ vRow V.// [(col, B)])] where
-  vgrid = V.fromList grid
-  vRow = V.fromList $ vgrid V.! row
+writeBlock row col grid = grid V.// [(row, vRow V.// [(col, B)])] where
+  vRow = grid V.! row
 
 -- turn a list of runs into a Line (list of Blocks)
 -- a "run" is an unbroken sequence of black Blocks
 mkLine :: [Int] -> Line
-mkLine [] = []
-mkLine (x:y:xs) = run x B ++ [W] ++ mkLine (y:xs)
+mkLine [] = V.empty
 mkLine [x] = run x B
+mkLine (x:xs) = run x B V.++ V.singleton W V.++ mkLine xs
+
 
 -- returns the number of free spaces we have to move blocks around within
 -- within the max length of a line corresponding to the Int list
@@ -65,10 +65,10 @@ freeSpaces maxLen runs = if len < 0 then 0 else len where
   len = maxLen - lineLen
   lineLen = sum runs + length runs - 1
 
-grow :: Int -> Line -> [Line]
-grow moves line
-  | moves <= 0 = [line]
-  | otherwise = line : grow (moves - 1) (W : line)
+-- grow :: Int -> Line -> [Line]
+-- grow moves line
+--   | moves <= 0 = [line]
+--   | otherwise = line : grow (moves - 1) (W : line)
 
 run :: Int -> Block -> Line
-run = replicate
+run = V.replicate

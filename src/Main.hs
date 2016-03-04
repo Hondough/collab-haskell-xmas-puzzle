@@ -6,8 +6,8 @@ import Grid
 
 main :: IO ()
 main = do
-  let r = zipWith (mkLineData Row) [1..25] rows
-  let c = zipWith (mkLineData Col) [1..25] cols
+  let r = zipWith (mkLineData Row) [0..24] rows
+  let c = zipWith (mkLineData Col) [0..24] cols
   mapM_ print r
   mapM_ print c
 
