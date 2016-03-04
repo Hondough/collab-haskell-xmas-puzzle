@@ -22,6 +22,25 @@ instance Ord Block where
   compare W B = LT
   compare _ _ = EQ
 
+data LineDir = Row | Col deriving Show
+
+data LineData = LineData {
+  dir :: LineDir
+  ,idx :: Int
+  ,locked :: Bool
+  ,line :: Line
+  ,moves :: Int
+} deriving Show
+
+mkLineData :: LineDir -> Int -> [Int] -> LineData
+mkLineData direction index runs = LineData {
+  dir = direction
+  ,idx = index
+  ,locked = False
+  ,line = mkLine runs
+  ,moves = freeSpaces 25 runs
+}
+
 -- returns the block at (row,col), if any
 blockAt :: Int -> Int -> Grid -> Maybe Block
 blockAt row col grid = do
@@ -42,25 +61,10 @@ freeSpaces maxLen runs = if len < 0 then 0 else len where
   len = maxLen - lineLen
   lineLen = sum runs + length runs - 1
 
--- returns the number of free spaces we have to move blocks around within
--- within the max length of a Line
--- freeSpaces :: Int -> Line -> Int
--- freeSpaces maxLen line = let len = maxLen - length line in
---   if len < 0 then 0 else len
-
-moves :: [Int] -> Int
-moves = freeSpaces 25
-
 grow :: Int -> Line -> [Line]
 grow moves line
   | moves <= 0 = [line]
   | otherwise = line : grow (moves - 1) (W : line)
-
--- this really needs to be something like iterate map
-growAll :: [Int] -> [[Line]]
-growAll runs = map (\n -> grow (moves runs) (run n B)) runs
-
-data Run = Run Block Int deriving Show
 
 run :: Int -> Block -> Line
 run = replicate

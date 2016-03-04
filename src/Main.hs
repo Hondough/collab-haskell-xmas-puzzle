@@ -5,7 +5,11 @@ import Grid
 -- http://www.gchq.gov.uk/press_and_media/news_and_features/Pages/Directors-Christmas-puzzle-2015.aspx
 
 main :: IO ()
-main = mapM_ print $ growAll $ head rows
+main = do
+  let r = zipWith (mkLineData Row) [1..25] rows
+  let c = zipWith (mkLineData Col) [1..25] cols
+  mapM_ print r
+  mapM_ print c
 
 {-
 λ filter (== 0) $ map (moves.mkLine) rows
