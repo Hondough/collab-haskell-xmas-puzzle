@@ -42,13 +42,19 @@ mkLineData direction index runs = LineData {
   ,moves = freeSpaces 25 runs
 }
 
--- returns the block at (row,col), if any
+-- returns the block at (row,col)
 readBlock :: Int -> Int -> Grid -> Block
 readBlock row col grid = (grid V.! row) V.! col
 
-writeBlock :: Int -> Int -> Grid -> Grid
-writeBlock row col grid = grid V.// [(row, vRow V.// [(col, B)])] where
+writeBlock :: Block -> Int -> Int -> Grid -> Grid
+writeBlock block row col grid = grid V.// [(row, vRow V.// [(col, block)])] where
   vRow = grid V.! row
+
+fill :: Int -> Int -> Grid -> Grid
+fill = writeBlock B
+
+erase :: Int -> Int -> Grid -> Grid
+erase = writeBlock W
 
 -- turn a list of runs into a Line (list of Blocks)
 -- a "run" is an unbroken sequence of black Blocks
