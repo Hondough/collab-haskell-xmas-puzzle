@@ -83,3 +83,8 @@ growRuns :: Int -> [Int] -> V.Vector Line
 growRuns maxlen xs = V.concatMap (grow moves) lines where
   moves = freeSpaces maxlen xs
   lines = V.map (mkLine . (:[])) (V.fromList xs)
+
+growRuns' :: Int -> [Int] -> V.Vector (V.Vector Line)
+growRuns' maxlen xs = V.map (grow moves) lines where
+  moves = freeSpaces maxlen xs
+  lines = V.map (mkLine . (:[])) (V.fromList xs)
