@@ -71,10 +71,15 @@ freeSpaces maxLen runs = if len < 0 then 0 else len where
   len = maxLen - lineLen
   lineLen = sum runs + length runs - 1
 
--- grow :: Int -> Line -> [Line]
--- grow moves line
---   | moves <= 0 = [line]
---   | otherwise = line : grow (moves - 1) (W : line)
-
 run :: Int -> Block -> Line
 run = V.replicate
+
+grow :: Int -> Line -> V.Vector Line
+grow moves line
+  | moves <= 0 = V.singleton line
+  | otherwise = line `V.cons` grow (moves - 1) (V.cons W line)
+
+growRuns :: Int -> [Int] -> V.Vector Line
+growRuns maxlen xs = V.concatMap (grow moves) lines where
+  moves = freeSpaces maxlen xs
+  lines = V.map (mkLine . (:[])) (V.fromList xs)
