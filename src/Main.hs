@@ -10,7 +10,7 @@ main :: IO ()
 main = do
   let r = zipWith (mkLineData Row) [0..24] rows
   let c = zipWith (mkLineData Col) [0..24] cols
-  mapM_ print $ L.sort r where
+  mapM_ print $ L.sort r
 
 blackStart :: [(Int, Int)]
 blackStart = [(3,3), (3,4), (3,12), (3,13), (3,21)
