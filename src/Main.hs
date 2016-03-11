@@ -1,6 +1,8 @@
 module Main where
 
 import Grid
+import qualified Data.Vector as V
+import qualified Data.List as L
 
 -- http://www.gchq.gov.uk/press_and_media/news_and_features/Pages/Directors-Christmas-puzzle-2015.aspx
 
@@ -8,17 +10,21 @@ main :: IO ()
 main = do
   let r = zipWith (mkLineData Row) [0..24] rows
   let c = zipWith (mkLineData Col) [0..24] cols
-  mapM_ print r
-  mapM_ print c
+  mapM_ print $ L.sortBy ordMoves r where
+    ordMoves a b
+      | moves a > moves b = GT
+      | moves a < moves b = LT
+      | otherwise = EQ
 
-{-
-λ filter (== 0) $ map (moves.mkLine) rows
-[0,0]
-(0.00 secs, 0 bytes)
-λ filter (== 0) $ map (moves.mkLine) cols
-[0,0,0]
-(0.00 secs, 0 bytes)
--}
+blackStart :: [(Int, Int)]
+blackStart = [(3,3), (3,4), (3,12), (3,13), (3,21)
+  , (8,6), (8,7), (8,10), (8,14), (8,15), (8,18)
+  , (16,6), (16,11), (16,16), (16,20)
+  , (21,3), (21,4), (21,9), (21,10), (21,15), (21,20), (21,21)]
+
+initial :: Grid
+initial = foldr (\(r,c) acc -> fill r c acc) blank blackStart where
+  blank = V.replicate 25 $ run 25 W
 
 rows :: [[Int]]
 rows = [
