@@ -10,11 +10,7 @@ main :: IO ()
 main = do
   let r = zipWith (mkLineData Row) [0..24] rows
   let c = zipWith (mkLineData Col) [0..24] cols
-  mapM_ print $ L.sortBy ordMoves r where
-    ordMoves a b
-      | moves a > moves b = GT
-      | moves a < moves b = LT
-      | otherwise = EQ
+  mapM_ print $ L.sort r where
 
 blackStart :: [(Int, Int)]
 blackStart = [(3,3), (3,4), (3,12), (3,13), (3,21)

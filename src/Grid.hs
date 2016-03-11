@@ -33,6 +33,12 @@ data LineData = LineData {
   ,moves :: Int
 } deriving Show
 
+instance Eq LineData where
+  (==) a b = moves a == moves b
+
+instance Ord LineData where
+  compare a b = compare (moves a) (moves b)
+
 mkLineData :: LineDir -> Int -> [Int] -> LineData
 mkLineData direction index runs = LineData {
   dir = direction
