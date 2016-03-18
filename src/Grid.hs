@@ -6,12 +6,16 @@ import Control.Monad
 
 data Block = B | W | U
 
+type Row = Int
+type Col = Int
+type Offset = Int
 type Line = V.Vector Block
 type Grid = V.Vector Line --[[Block]]
 
 instance Show Block where
   show B = "1"
-  show W = "_"
+  show W = "0"
+  show U = "_"
 
 instance Eq Block where
   B == B = True
@@ -48,19 +52,33 @@ mkLineData direction index runs = LineData {
   ,moves = freeSpaces 25 runs
 }
 
+blockCheck :: Block -> Block -> Bool
+blockCheck _ U = True
+blockCheck block gridBlock = block == gridBlock
+
 -- returns the block at (row,col)
-readBlock :: Int -> Int -> Grid -> Block
+readBlock :: Row -> Col -> Grid -> Block
 readBlock row col grid = (grid V.! row) V.! col
 
-writeBlock :: Block -> Int -> Int -> Grid -> Grid
+writeBlock :: Block -> Row -> Col -> Grid -> Grid
 writeBlock block row col grid = grid V.// [(row, vRow V.// [(col, block)])] where
   vRow = grid V.! row
 
-fill :: Int -> Int -> Grid -> Grid
+fill :: Row -> Col -> Grid -> Grid
 fill = writeBlock B
 
-erase :: Int -> Int -> Grid -> Grid
+erase :: Row -> Col -> Grid -> Grid
 erase = writeBlock W
+
+fillRow :: Row -> Line -> Grid -> Grid
+fillRow row line grid = grid V.// [(row, line)]
+
+fillCol :: Col -> Line -> Grid -> Grid
+fillCol col line grid = foldr (\v acc -> writeBlock (snd v) (fst v) col acc) grid coords where
+  coords = zip [0..] (V.toList line)
+
+checkLine :: Line -> LineDir -> Offset -> Grid -> Bool
+checkLine line dir offset grid = undefined
 
 -- turn a list of runs into a Line (list of Blocks)
 -- a "run" is an unbroken sequence of black Blocks
