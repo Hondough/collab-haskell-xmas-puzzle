@@ -16,8 +16,8 @@ main = do
   print "filled"
   let newGrid = foldr (\v acc -> fillRow (idx v) (line v) acc) initial $ zeros r
   mapM_ print $ foldr (\v acc -> fillCol (idx v) (line v) acc) newGrid $ zeros c
-  -- mapM_ print $ L.sort r
-  -- mapM_ print $ L.sort c
+  mapM_ print $ L.sort r
+  mapM_ print $ L.sort c
 
 blackStart :: [(Int, Int)]
 blackStart = [(3,3), (3,4), (3,12), (3,13), (3,21)

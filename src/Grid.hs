@@ -56,6 +56,9 @@ blockCheck :: Block -> Block -> Bool
 blockCheck _ U = True
 blockCheck block gridBlock = block == gridBlock
 
+consistent :: Line -> Line -> Bool
+consistent ln gridBlocks = and $ V.zipWith blockCheck ln gridBlocks
+
 -- returns the block at (row,col)
 readBlock :: Row -> Col -> Grid -> Block
 readBlock row col grid = (grid V.! row) V.! col
