@@ -14,8 +14,8 @@ type Grid = V.Vector Line --[[Block]]
 
 instance Show Block where
   show B = "1"
-  show W = "0"
-  show U = "_"
+  show W = "_"
+  show U = " "
 
 instance Eq Block where
   B == B = True
@@ -52,12 +52,15 @@ mkLineData direction index runs = LineData {
   ,moves = freeSpaces 25 runs
 }
 
-blockCheck :: Block -> Block -> Bool
-blockCheck _ U = True
-blockCheck block gridBlock = block == gridBlock
+-- check if a block to be placed is compatible with the block on the grid
+compatibleBlock :: Block -> Block -> Bool
+compatibleBlock _ U = True
+compatibleBlock block gridBlock = block == gridBlock
 
-consistent :: Line -> Line -> Bool
-consistent ln gridBlocks = and $ V.zipWith blockCheck ln gridBlocks
+-- check if the line of blocks to be place is compatible wtih the line of
+-- blocks on the grid
+compatibleLine :: Line -> Line -> Bool
+compatibleLine ln gridBlocks = and $ V.zipWith compatibleBlock ln gridBlocks
 
 -- returns the block at (row,col)
 readBlock :: Row -> Col -> Grid -> Block
@@ -89,7 +92,6 @@ mkLine :: [Int] -> Line
 mkLine [] = V.empty
 mkLine [x] = run x B
 mkLine (x:xs) = run x B V.++ V.singleton W V.++ mkLine xs
-
 
 -- returns the number of free spaces we have to move blocks around within
 -- within the max length of a line corresponding to the Int list
