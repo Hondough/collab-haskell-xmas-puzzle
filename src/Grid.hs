@@ -109,7 +109,9 @@ expand :: (Line, [Run], Int) -> [(Line, [Run], Int)]
 expand (line, [], 0) = [(line, [], 0)]
 expand (line, [], free) = [(line V.++ run free W, [], 0)]
 expand (line, x:xs, free) = concatMap (expand . foo line) (expandRun x free) where
-  foo oldLine (line, free) = (oldLine V.++ V.singleton W V.++ line, xs, free)
+  foo oldLine (line, free)
+    | V.null oldLine = (line, xs, free)
+    | otherwise = (oldLine V.++ V.singleton W V.++ line, xs, free)
 
 expandRun :: Run -> Int -> [(Line, Int)]
 expandRun r free = [(run n W V.++ run r B, free - n) | n <- [0..free]]
