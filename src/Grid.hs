@@ -56,6 +56,7 @@ mkLineData direction index runs = LineData {
 -- check if a block to be placed is compatible with the block on the grid
 compatibleBlock :: Block -> Block -> Bool
 compatibleBlock _ U = True
+compatibleBlock U _ = True
 compatibleBlock block gridBlock = block == gridBlock
 
 -- check if the line of blocks to be place is compatible wtih the line of
