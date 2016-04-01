@@ -6,6 +6,9 @@ import qualified Data.List as L
 
 -- http://www.gchq.gov.uk/press_and_media/news_and_features/Pages/Directors-Christmas-puzzle-2015.aspx
 
+-- TODO: use this technique
+-- length $ expand (V.head $ V.drop 16 initial) (V.empty, (head $ drop 16 rows), freeSpaces 25 (head $ drop 16 rows))
+
 main :: IO ()
 main = do
   let zeros = filter (\x -> 0 == moves x)
@@ -13,16 +16,16 @@ main = do
   let c = zipWith (mkLineData Col) [0..24] cols
   mapM_ print $ zeros r ++ zeros c
   mapM_ print initial
-  let solutions x = zip [0..] $ map (length . (\v -> expand (V.empty, v, freeSpaces 25 v))) x
-  print "Row solutions"
-  mapM_ print (solutions rows)
-  print "Column solutions"
-  mapM_ print (solutions cols)
+  -- let solutions x = zip [0..] $ map (length . (\v -> expand (V.empty, v, freeSpaces 25 v))) x
+  -- print "Row solutions"
+  -- mapM_ print (solutions rows)
+  -- print "Column solutions"
+  -- mapM_ print (solutions cols)
   -- print "filled"
-  -- let newGrid = foldr (\v acc -> fillRow (idx v) (line v) acc) initial $ zeros r
-  -- mapM_ print $ foldr (\v acc -> fillCol (idx v) (line v) acc) newGrid $ zeros c
-  -- mapM_ print $ L.sort r
-  -- mapM_ print $ L.sort c
+  let newGrid = foldr (\v acc -> fillRow (idx v) (line v) acc) initial $ zeros r
+  mapM_ print $ foldr (\v acc -> fillCol (idx v) (line v) acc) newGrid $ zeros c
+  mapM_ print $ L.sort r
+  mapM_ print $ L.sort c
 
 blackStart :: [(Int, Int)]
 blackStart = [(3,3), (3,4), (3,12), (3,13), (3,21)

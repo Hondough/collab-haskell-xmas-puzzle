@@ -106,13 +106,14 @@ curry3 :: (a -> b -> c -> d) -> (a,b,c) -> d
 curry3 f (a,b,c) = f a b c
 
 -- recursively expands the input until we have no more runs or free spaces left
-expand :: (Line, [Run], Int) -> [(Line, [Run], Int)]
-expand (line, [], 0) = [(line, [], 0)]
-expand (line, [], free) = [(line V.++ run free W, [], 0)]
-expand (line, x:xs, free) = concatMap (expand . paste line) (expandRun x free) where
-  paste oldLine (line, free)
-    | V.null oldLine = (line, xs, free)
-    | otherwise = (oldLine V.++ V.singleton W V.++ line, xs, free)
+expand :: Line -> (Line, [Run], Int) -> [(Line, [Run], Int)]
+expand _ (line, [], 0) = [(line, [], 0)]
+expand _ (line, [], free) = [(line V.++ run free W, [], 0)]
+expand gridLine (line, x:xs, free) = concatMap (expand gridLine . paste line)
+  $ filter (\(x, _) -> compatibleLine (line V.++ V.singleton W V.++ x) gridLine) (expandRun x free) where
+    paste oldLine (line, free)
+      | V.null oldLine = (line, xs, free)
+      | otherwise = (oldLine V.++ V.singleton W V.++ line, xs, free)
 
 expandRun :: Run -> Int -> [(Line, Int)]
 expandRun r free = [(run n W V.++ run r B, free - n) | n <- [0..free]]
