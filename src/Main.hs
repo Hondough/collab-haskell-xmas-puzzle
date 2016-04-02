@@ -7,7 +7,8 @@ import qualified Data.List as L
 -- http://www.gchq.gov.uk/press_and_media/news_and_features/Pages/Directors-Christmas-puzzle-2015.aspx
 
 -- TODO: use this technique
--- length $ expand (V.head $ V.drop 16 initial) (V.empty, (head $ drop 16 rows), freeSpaces 25 (head $ drop 16 rows))
+-- should give 1 solution
+-- expand ((initialGrid rows cols) V.! 6) (V.empty, rows !! 6, 0)
 
 main :: IO ()
 main = do

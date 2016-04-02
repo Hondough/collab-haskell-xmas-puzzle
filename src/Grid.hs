@@ -110,10 +110,14 @@ expand :: Line -> (Line, [Run], Int) -> [(Line, [Run], Int)]
 expand _ (line, [], 0) = [(line, [], 0)]
 expand _ (line, [], free) = [(line V.++ run free W, [], 0)]
 expand gridLine (line, x:xs, free) = concatMap (expand gridLine . paste line)
-  $ filter (\(x, _) -> compatibleLine (line V.++ V.singleton W V.++ x) gridLine) (expandRun x free) where
-    paste oldLine (line, free)
-      | V.null oldLine = (line, xs, free)
-      | otherwise = (oldLine V.++ V.singleton W V.++ line, xs, free)
+  $ filter compatible (expandRun x free) where
+    compatible (x, _) = compatibleLine (pasteLine line x) gridLine
+    compatibleAlways _ = True
+    paste oldLine (newLine, free) = (pasteLine oldLine newLine, xs, free)
+    pasteLine oldLine newLine
+      | V.null oldLine = newLine
+      | otherwise = oldLine V.++ V.singleton W V.++ newLine
+
 
 expandRun :: Run -> Int -> [(Line, Int)]
 expandRun r free = [(run n W V.++ run r B, free - n) | n <- [0..free]]
