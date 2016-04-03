@@ -11,7 +11,7 @@ main = do
   let solLen = length . (\(gridLine, runs) -> expand gridLine (V.empty, runs, freeSpaces 25 runs))
   let initial = initialGrid rows cols
   mapM_ print initial
-  let solutions x gridLines = zip [0..] $ map solLen $ zip x gridLines
+  let solutions gridLines x = zip [0..] $ map solLen $ zip gridLines x
   print "Row solutions"
   mapM_ print $ solutions (gridRowList initial) rows
   print "Column solutions"
