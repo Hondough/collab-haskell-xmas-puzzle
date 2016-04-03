@@ -8,14 +8,13 @@ import qualified Data.List as L
 
 main :: IO ()
 main = do
-  let solLen = length . (\(gridLine, runs) -> expand gridLine (V.empty, runs, freeSpaces 25 runs))
+  let sLen gridLine runs = length $ expand gridLine (V.empty, runs, freeSpaces 25 runs)
   let initial = initialGrid rows cols
   mapM_ print initial
-  let solutions gridLines x = zip [0..] $ map solLen $ zip gridLines x
-  print "Row solutions"
-  mapM_ print $ solutions (gridRowList initial) rows
-  print "Column solutions"
-  mapM_ print $ solutions (gridColList initial) cols
+  let solutions gridLines x = zip [0..] $ zipWith sLen gridLines x
+  let sol f = solutions (f initial)
+  print "Row solutions" >> mapM_ print (sol gridRowList rows)
+  print "Column solutions" >> mapM_ print (sol gridColList cols)
 
 blackStart :: [(Int, Int)]
 blackStart = [(3,3), (3,4), (3,12), (3,13), (3,21)
