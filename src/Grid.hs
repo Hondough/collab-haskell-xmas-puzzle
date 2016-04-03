@@ -64,6 +64,18 @@ compatibleBlock block gridBlock = block == gridBlock
 compatibleLine :: Line -> Line -> Bool
 compatibleLine ln gridBlocks = and $ V.zipWith compatibleBlock ln gridBlocks
 
+gridRow :: Grid -> Row -> Line
+gridRow grid row = grid V.! getRow row
+
+gridRowList :: Grid -> [Line]
+gridRowList = V.toList
+
+gridCol :: Grid -> Col -> Line
+gridCol grid col = V.map (\l -> l V.! getCol col) grid
+
+gridColList :: Grid -> [Line]
+gridColList grid = map (gridCol grid . Col) [0..(V.length grid - 1)]
+
 -- returns the block at (row,col)
 readBlock :: Row -> Col -> Grid -> Block
 readBlock row col grid = (grid V.! getRow row) V.! getCol col

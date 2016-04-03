@@ -6,24 +6,16 @@ import qualified Data.List as L
 
 -- http://www.gchq.gov.uk/press_and_media/news_and_features/Pages/Directors-Christmas-puzzle-2015.aspx
 
--- TODO: use this technique
--- should give 1 solution
--- expand ((initialGrid rows cols) V.! 6) (V.empty, rows !! 6, 0)
-
 main :: IO ()
 main = do
+  let solLen = length . (\(gridLine, runs) -> expand gridLine (V.empty, runs, freeSpaces 25 runs))
   let initial = initialGrid rows cols
   mapM_ print initial
-  let solutions x = zip [0..] $ map (length . (\(l, v) -> expand l (V.empty, v, freeSpaces 25 v))) (zip (V.toList initial) x)
+  let solutions x gridLines = zip [0..] $ map solLen $ zip x gridLines
   print "Row solutions"
-  mapM_ print (solutions rows)
+  mapM_ print $ solutions (gridRowList initial) rows
   print "Column solutions"
-  mapM_ print (solutions cols)
-  -- print "filled"
-  -- let g0 = foldr (\v acc -> fillRow (idx v) (line v) acc) initial $ zeros r
-  -- let initialGrid = foldr (\v acc -> fillCol (idx v) (line v) acc) g0 $ zeros c
-  -- mapM_ print $ L.sort r
-  -- mapM_ print $ L.sort c
+  mapM_ print $ solutions (gridColList initial) cols
 
 blackStart :: [(Int, Int)]
 blackStart = [(3,3), (3,4), (3,12), (3,13), (3,21)
