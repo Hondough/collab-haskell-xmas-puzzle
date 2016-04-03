@@ -6,8 +6,8 @@ import Control.Monad
 
 data Block = B | W | U
 
-type Row = Int
-type Col = Int
+newtype Row = Row {getRow :: Int} deriving Show
+newtype Col = Col {getCol :: Int} deriving Show
 type Offset = Int
 type Run = Int
 type Line = V.Vector Block
@@ -28,7 +28,7 @@ instance Ord Block where
   compare W B = LT
   compare _ _ = EQ
 
-data LineDir = Row | Col deriving Show
+data LineDir = DRow | DCol deriving Show
 
 data LineData = LineData {
   dir :: LineDir
@@ -66,11 +66,11 @@ compatibleLine ln gridBlocks = and $ V.zipWith compatibleBlock ln gridBlocks
 
 -- returns the block at (row,col)
 readBlock :: Row -> Col -> Grid -> Block
-readBlock row col grid = (grid V.! row) V.! col
+readBlock row col grid = (grid V.! getRow row) V.! getCol col
 
 writeBlock :: Block -> Row -> Col -> Grid -> Grid
-writeBlock block row col grid = grid V.// [(row, vRow V.// [(col, block)])] where
-  vRow = grid V.! row
+writeBlock block row col grid = grid V.// [(getRow row, vRow V.// [(getCol col, block)])] where
+  vRow = grid V.! getRow row
 
 fill :: Row -> Col -> Grid -> Grid
 fill = writeBlock B
@@ -79,11 +79,11 @@ erase :: Row -> Col -> Grid -> Grid
 erase = writeBlock W
 
 fillRow :: Row -> Line -> Grid -> Grid
-fillRow row line grid = grid V.// [(row, line)]
+fillRow row line grid = grid V.// [(getRow row, line)]
 
 fillCol :: Col -> Line -> Grid -> Grid
 fillCol col line grid = foldr (\v acc -> writeBlock (snd v) (fst v) col acc) grid coords where
-  coords = zip [0..] (V.toList line)
+  coords = zip (map Row [0..]) (V.toList line)
 
 -- turn a list of runs into a Line (list of Blocks)
 -- a "run" is an unbroken sequence of black Blocks

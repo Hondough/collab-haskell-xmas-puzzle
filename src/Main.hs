@@ -32,15 +32,15 @@ blackStart = [(3,3), (3,4), (3,12), (3,13), (3,21)
   , (21,3), (21,4), (21,9), (21,10), (21,15), (21,20), (21,21)]
 
 initialHints :: Grid
-initialHints = foldr (\(r,c) acc -> fill r c acc) blank blackStart where
+initialHints = foldr (\(r,c) acc -> fill (Row r) (Col c) acc) blank blackStart where
   blank = V.replicate 25 $ run 25 U
 
 initialGrid :: [[Int]] -> [[Int]] -> Grid
-initialGrid rows cols = foldr (\v acc -> fillCol (idx v) (line v) acc) g0 $ zeros c where
+initialGrid rows cols = foldr (\v acc -> fillCol (Col (idx v)) (line v) acc) g0 $ zeros c where
   zeros = filter (\x -> 0 == moves x)
-  r = zipWith (mkLineData Row) [0..24] rows
-  c = zipWith (mkLineData Col) [0..24] cols
-  g0 = foldr (\v acc -> fillRow (idx v) (line v) acc) initialHints $ zeros r
+  r = zipWith (mkLineData DRow) [0..24] rows
+  c = zipWith (mkLineData DCol) [0..24] cols
+  g0 = foldr (\v acc -> fillRow (Row (idx v)) (line v) acc) initialHints $ zeros r
 
 rows :: [[Int]]
 rows = [
