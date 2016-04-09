@@ -6,22 +6,37 @@ import qualified Data.List as L
 
 -- http://www.gchq.gov.uk/press_and_media/news_and_features/Pages/Directors-Christmas-puzzle-2015.aspx
 
-main :: IO ()
-main = do
-  let sLen gridLine runs = length $ expand gridLine (V.empty, runs, freeSpaces 25 runs)
+main' :: IO ()
+main' = do
   let initial = initialGrid rows cols
   mapM_ print initial
+  let sLen gridLine runs = length $ expand gridLine (V.empty, runs, freeSpaces 25 runs)
   let solutions gridLines x = zip [0..] $ zipWith sLen gridLines x
   let sol f = solutions (f initial)
   print "Row solutions" >> mapM_ print (sol gridRowList rows)
   print "Column solutions" >> mapM_ print (sol gridColList cols)
 
-blackStart :: [(Int, Int)]
-blackStart = [(3,3), (3,4), (3,12), (3,13), (3,21)
-  , (8,6), (8,7), (8,10), (8,14), (8,15), (8,18)
-  , (16,6), (16,11), (16,16), (16,20)
-  , (21,3), (21,4), (21,9), (21,10), (21,15), (21,20), (21,21)]
+main :: IO ()
+main = do
+  let grid = initialGrid rows cols
+  let showLen = mapM_ (print . length. snd)
+  print "Row solutions"
+  showLen $ zip [0..] (solutions (gridRowList grid) rows)
+  print "Column solutions"
+  showLen $ zip [0..] (solutions (gridColList grid) cols)
 
+expandRuns :: Line -> [Run] -> [(Line, [Run], Int)]
+expandRuns gridLine runs = expand gridLine (V.empty, runs, freeSpaces 25 runs)
+
+solutions :: [Line] -> [[Run]] -> [[(Line, [Run], Int)]]
+solutions = zipWith expandRuns
+
+{-
+  Data to initialize the puzzle
+  InitialHints is the grid given to us with pre-filled blocks
+  InitialGrid is InitialHints with any rows and columns filled in that can only
+    fit in one way.
+-}
 initialHints :: Grid
 initialHints = foldr (\(r,c) acc -> fill (Row r) (Col c) acc) blank blackStart where
   blank = V.replicate 25 $ run 25 U
@@ -32,6 +47,12 @@ initialGrid rows cols = foldr (\v acc -> fillCol (Col (idx v)) (line v) acc) g0 
   r = zipWith (mkLineData DRow) [0..24] rows
   c = zipWith (mkLineData DCol) [0..24] cols
   g0 = foldr (\v acc -> fillRow (Row (idx v)) (line v) acc) initialHints $ zeros r
+
+blackStart :: [(Int, Int)]
+blackStart = [(3,3), (3,4), (3,12), (3,13), (3,21)
+  , (8,6), (8,7), (8,10), (8,14), (8,15), (8,18)
+  , (16,6), (16,11), (16,16), (16,20)
+  , (21,3), (21,4), (21,9), (21,10), (21,15), (21,20), (21,21)]
 
 rows :: [[Int]]
 rows = [

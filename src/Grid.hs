@@ -117,6 +117,10 @@ run = V.replicate
 curry3 :: (a -> b -> c -> d) -> (a,b,c) -> d
 curry3 f (a,b,c) = f a b c
 
+interleave :: [a] -> [a] -> [a]
+interleave [] _ = []
+interleave (x:xs) ys = x : interleave ys xs
+
 -- recursively expands the input until we have no more runs or free spaces left
 expand :: Line -> (Line, [Run], Int) -> [(Line, [Run], Int)]
 expand _ (line, [], 0) = [(line, [], 0)]
