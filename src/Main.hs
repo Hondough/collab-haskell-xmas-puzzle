@@ -6,15 +6,17 @@ import qualified Data.List as L
 
 -- http://www.gchq.gov.uk/press_and_media/news_and_features/Pages/Directors-Christmas-puzzle-2015.aspx
 
-main' :: IO ()
-main' = do
+{-
+main :: IO ()
+main = do
   let initial = initialGrid rows cols
   mapM_ print initial
-  let sLen gridLine runs = length $ expand gridLine (V.empty, runs, freeSpaces 25 runs)
+  let sLen gridLine runs = length $ expandLine gridLine (V.empty, runs, freeSpaces 25 runs)
   let solutions gridLines x = zip [0..] $ zipWith sLen gridLines x
   let sol f = solutions (f initial)
   print "Row solutions" >> mapM_ print (sol gridRowList rows)
   print "Column solutions" >> mapM_ print (sol gridColList cols)
+-}
 
 main :: IO ()
 main = do
@@ -25,11 +27,9 @@ main = do
   print "Column solutions"
   showLen $ zip [0..] (solutions (gridColList grid) cols)
 
-expandRuns :: Line -> [Run] -> [(Line, [Run], Int)]
-expandRuns gridLine runs = expand gridLine (V.empty, runs, freeSpaces 25 runs)
-
 solutions :: [Line] -> [[Run]] -> [[(Line, [Run], Int)]]
-solutions = zipWith expandRuns
+solutions = zipWith expandRuns where
+  expandRuns gridLine runs = expandLine gridLine (V.empty, runs, freeSpaces 25 runs)
 
 {-
   Data to initialize the puzzle

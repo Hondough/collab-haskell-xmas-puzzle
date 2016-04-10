@@ -122,10 +122,10 @@ interleave [] _ = []
 interleave (x:xs) ys = x : interleave ys xs
 
 -- recursively expands the input until we have no more runs or free spaces left
-expand :: Line -> (Line, [Run], Int) -> [(Line, [Run], Int)]
-expand _ (line, [], 0) = [(line, [], 0)]
-expand _ (line, [], free) = [(line V.++ run free W, [], 0)]
-expand gridLine (line, x:xs, free) = concatMap (expand gridLine . paste line)
+expandLine :: Line -> (Line, [Run], Int) -> [(Line, [Run], Int)]
+expandLine _ (line, [], 0) = [(line, [], 0)]
+expandLine _ (line, [], free) = [(line V.++ run free W, [], 0)]
+expandLine gridLine (line, x:xs, free) = concatMap (expandLine gridLine . paste line)
   $ filter compatible (expandRun x free) where
     compatible (x, _) = compatibleLine (pasteLine line x) gridLine
     compatibleAlways _ = True
