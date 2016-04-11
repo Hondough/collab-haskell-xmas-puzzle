@@ -31,6 +31,16 @@ solutions :: [Line] -> [[Run]] -> [[(Line, [Run], Int)]]
 solutions = zipWith expandRuns where
   expandRuns gridLine runs = expandLine gridLine (V.empty, runs, freeSpaces 25 runs)
 
+answer :: [Grid]
+answer = finalGrid initialGrid solutions
+
+--Repeatedly apply solutions against grid to sift down to an answer
+{-
+finalGrid :: [Grid] [Line]
+finalGrid g (l:ls) = [ ans | g' <- g
+                           ,ans <- finalGrid g' ls]
+-}
+finalGrid = undefined
 {-
   Data to initialize the puzzle
   InitialHints is the grid given to us with pre-filled blocks
