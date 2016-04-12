@@ -30,10 +30,12 @@ main = do
 
 -- solutions :: [Line] -> [[Run]] -> [[(Line, [Run], Int)]]
 -- solutions = zipWith expandRuns where
---   expandRuns gridLine runs = expandLine gridLine (V.empty, runs, freeSpaces 25 runs)
+--   expandRuns gridLine runs = expandLine gridLine
+--                                         (V.empty, runs, freeSpaces 25 runs)
 solutions :: [Line] -> [[Run]] -> [[Line]]
 solutions lns runs = map (map (\(x,_,_) -> x)) $ zipWith expandRuns lns runs where
-  expandRuns gridLine runs = expandLine gridLine (V.empty, runs, freeSpaces 25 runs)
+  expandRuns gridLine runs = expandLine gridLine
+                                        (V.empty, runs, freeSpaces 25 runs)
 
 {-
   Data to initialize the puzzle
