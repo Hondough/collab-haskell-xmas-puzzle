@@ -21,13 +21,10 @@ main = do
 main :: IO ()
 main = do
   let grid = initialGrid rows cols
-  -- let showLen = mapM_ (print . (\(n, x) -> show n ++ " " ++ show (length x)))
-  print "Row solutions"
   let rowSlns = map (lnData DRow) $ zip [0..] (solutions (gridRowList grid) rows)
-  print "Column solutions"
   let colSlns = map (lnData DCol) $ zip [0..] (solutions (gridColList grid) cols)
   let foo = interleave rowSlns colSlns
-  print $ length foo
+  print [(dir (head ld), idx (head ld), length ld) | ld <- foo]
 
 lnData :: LineDir -> (Int, [Line]) -> [LineData]
 lnData direction (index, lns) =
