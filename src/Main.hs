@@ -21,12 +21,24 @@ main = do
 main :: IO ()
 main = do
   let grid = initialGrid rows cols
-  let showLen = mapM_ (print . (\(n, x) -> show n ++ " " ++ show (length x)))
-  -- let showLen = mapM_ (print . (\(n, x) -> show n ++ " " ++ show x))
+  -- let showLen = mapM_ (print . (\(n, x) -> show n ++ " " ++ show (length x)))
   print "Row solutions"
-  showLen $ zip [0..] (solutions (gridRowList grid) rows)
+  let rowSlns = map (lnData DRow) $ zip [0..] (solutions (gridRowList grid) rows)
   print "Column solutions"
-  showLen $ zip [0..] (solutions (gridColList grid) cols)
+  let colSlns = map (lnData DCol) $ zip [0..] (solutions (gridColList grid) cols)
+  let foo = interleave rowSlns colSlns
+  print $ length foo
+
+lnData :: LineDir -> (Int, [Line]) -> [LineData]
+lnData direction (index, lns) =
+  map (\ln -> LineData {
+        dir = direction
+        ,idx = index
+        ,line = ln
+        ,moves = 0
+        })
+      lns
+-- sln (l:ls) g = [ans | g' <- apply l to g, ans <- sln ls g', l consistent g']
 
 -- solutions :: [Line] -> [[Run]] -> [[(Line, [Run], Int)]]
 -- solutions = zipWith expandRuns where

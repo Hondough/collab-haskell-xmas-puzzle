@@ -28,27 +28,25 @@ instance Ord Block where
   compare W B = LT
   compare _ _ = EQ
 
-data LineDir = DRow | DCol deriving Show
+data LineDir = DRow | DCol deriving (Show, Eq)
 
 data LineData = LineData {
   dir :: LineDir
   ,idx :: Int
-  ,locked :: Bool
   ,line :: Line
   ,moves :: Int
 } deriving Show
 
 instance Eq LineData where
-  (==) a b = moves a == moves b
+  (==) a b = idx a == idx b && dir a == dir b
 
 instance Ord LineData where
-  compare a b = compare (moves a) (moves b)
+  compare a b = compare (idx a) (idx b)
 
 mkLineData :: LineDir -> Int -> [Run] -> LineData
 mkLineData direction index runs = LineData {
   dir = direction
   ,idx = index
-  ,locked = False
   ,line = mkLine runs
   ,moves = freeSpaces 25 runs
 }
