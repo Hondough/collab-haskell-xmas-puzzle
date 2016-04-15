@@ -121,6 +121,7 @@ interleave :: [a] -> [a] -> [a]
 interleave [] _ = []
 interleave (x:xs) ys = x : interleave ys xs
 
+
 -- recursively expands the input until we have no more runs or free spaces left
 expandLine :: Line -> (Line, [Run], Int) -> [(Line, [Run], Int)]
 expandLine _ (line, [], 0) = [(line, [], 0)]

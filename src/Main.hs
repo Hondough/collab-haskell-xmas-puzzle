@@ -38,15 +38,23 @@ solutions lns runs = map (map (\(x,_,_) -> x)) $ zipWith expandRuns lns runs whe
                                         (V.empty, runs, freeSpaces 25 runs)
 
 answer :: [Grid]
-answer = finalGrid initialGrid solutions
+answer = finalGrid (initialGrid rows cols) allLines
+
+
 
 --Repeatedly apply solutions against grid to sift down to an answer
-{-
-finalGrid :: [Grid] [Line]
-finalGrid g (l:ls) = [ ans | g' <- g
-                           ,ans <- finalGrid g' ls]
--}
-finalGrid = undefined
+finalGrid :: Grid -> [(LineDir, [Int])] -> [Grid]
+finalGrid g [] = g
+finalGrid g (l:ls) = [ ans | g' <- applyLineToGrid l g
+                            ,ans <- finalGrid g' ls]
+
+--applyLineToGrid :: [Int] -> LineDir -> Grid
+applyLineToGrid (DRow, rs) g = fillRow (Row r) $ zipWith (mkLineData DRow) [0] [rs]
+--applyLineToGrid cs DCol c g = fillCol col l g where
+--  col = Col c
+--  l = line $ mkLineData DCol c cs
+
+
 {-
   Data to initialize the puzzle
   InitialHints is the grid given to us with pre-filled blocks
@@ -69,6 +77,9 @@ blackStart = [(3,3), (3,4), (3,12), (3,13), (3,21)
   , (8,6), (8,7), (8,10), (8,14), (8,15), (8,18)
   , (16,6), (16,11), (16,16), (16,20)
   , (21,3), (21,4), (21,9), (21,10), (21,15), (21,20), (21,21)]
+
+allLines :: [(LineDir, [Int])]
+allLines = interleave (zip (repeat DRow) rows) (zip (repeat DCol) cols)
 
 rows :: [[Int]]
 rows = [
