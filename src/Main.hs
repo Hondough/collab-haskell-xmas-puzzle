@@ -6,45 +6,13 @@ import qualified Data.List as L
 
 -- http://www.gchq.gov.uk/press_and_media/news_and_features/Pages/Directors-Christmas-puzzle-2015.aspx
 
-{-
 main :: IO ()
 main = do
-  let initial = initialGrid rows cols
-  mapM_ print initial
-  let sLen gridLine runs = length $ expandLine gridLine (V.empty, runs, freeSpaces 25 runs)
-  let solutions gridLines x = zip [0..] $ zipWith sLen gridLines x
-  let sol f = solutions (f initial)
-  print "Row solutions" >> mapM_ print (sol gridRowList rows)
-  print "Column solutions" >> mapM_ print (sol gridColList cols)
--}
+  let f = solutions $ initialGrid rows cols
+  let rowCols = interleave (f DRow rows) (f DCol cols)
+  print [(dir (head ld), idx (head ld), length ld) | ld <- rowCols]
 
-main :: IO ()
-main = do
-  let grid = initialGrid rows cols
-  let rowSlns = map (lnData DRow) $ zip [0..] (solutions (gridRowList grid) rows)
-  let colSlns = map (lnData DCol) $ zip [0..] (solutions (gridColList grid) cols)
-  let foo = interleave rowSlns colSlns
-  print [(dir (head ld), idx (head ld), length ld) | ld <- foo]
-
-lnData :: LineDir -> (Int, [Line]) -> [LineData]
-lnData direction (index, lns) =
-  map (\ln -> LineData {
-        dir = direction
-        ,idx = index
-        ,line = ln
-        ,moves = 0
-        })
-      lns
 -- sln (l:ls) g = [ans | g' <- apply l to g, ans <- sln ls g', l consistent g']
-
--- solutions :: [Line] -> [[Run]] -> [[(Line, [Run], Int)]]
--- solutions = zipWith expandRuns where
---   expandRuns gridLine runs = expandLine gridLine
---                                         (V.empty, runs, freeSpaces 25 runs)
-solutions :: [Line] -> [[Run]] -> [[Line]]
-solutions lns runs = map (map (\(x,_,_) -> x)) $ zipWith expandRuns lns runs where
-  expandRuns gridLine runs = expandLine gridLine
-                                        (V.empty, runs, freeSpaces 25 runs)
 
 {-
   Data to initialize the puzzle
@@ -59,8 +27,8 @@ initialHints = foldr (\(r,c) acc -> fill (Row r) (Col c) acc) blank blackStart w
 initialGrid :: [[Int]] -> [[Int]] -> Grid
 initialGrid rows cols = foldr (\v acc -> fillCol (Col (idx v)) (line v) acc) g0 $ zeros c where
   zeros = filter (\x -> 0 == moves x)
-  r = zipWith (mkLineData DRow) [0..24] rows
-  c = zipWith (mkLineData DCol) [0..24] cols
+  r = zipWith (mkLineData DRow) [0..] rows
+  c = zipWith (mkLineData DCol) [0..] cols
   g0 = foldr (\v acc -> fillRow (Row (idx v)) (line v) acc) initialHints $ zeros r
 
 blackStart :: [(Int, Int)]

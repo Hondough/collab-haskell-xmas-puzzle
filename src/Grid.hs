@@ -132,6 +132,27 @@ expandLine gridLine (line, x:xs, free) = concatMap (expandLine gridLine . paste 
       | V.null oldLine = newLine
       | otherwise = oldLine V.++ V.singleton W V.++ newLine
 
-
 expandRun :: Run -> Int -> [(Line, Int)]
 expandRun r free = [(run n W V.++ run r B, free - n) | n <- [0..free]]
+
+-- Generate solutions
+solutions :: Grid -> LineDir -> [[Run]] -> [[LineData]]
+solutions grid dir rows = map (lnData dir) $
+  zip [0..] (lineSolutions (lineBuilder dir grid) rows) where
+    lineBuilder DCol = gridColList
+    lineBuilder DRow = gridRowList
+
+lnData :: LineDir -> (Int, [Line]) -> [LineData]
+lnData direction (index, lns) =
+  map (\ln -> LineData {
+        dir = direction
+        ,idx = index
+        ,line = ln
+        ,moves = 0
+        })
+      lns
+
+lineSolutions :: [Line] -> [[Run]] -> [[Line]]
+lineSolutions lns runs = map (map (\(x,_,_) -> x)) $ zipWith expandRuns lns runs where
+  expandRuns gridLine runs = expandLine gridLine
+                                        (V.empty, runs, freeSpaces 25 runs)
