@@ -146,15 +146,14 @@ expandRun r free = [(run n W V.++ run r B, free - n) | n <- [0..free]]
 
 -- Generate solutions
 answer :: [[LineData]] -> Grid -> Maybe Grid
-answer [] grid = Nothing
-answer ([] : more) grid = Just grid
+answer [] grid = Just grid
+answer ([] : more) grid = answer more grid
 answer ((sol:solutions):more) grid =
   if compatibleGrid grid sol
     then answer more (writeLine grid sol)
     else answer (solutions:more) grid
 
 -- sln (l:ls) g = [ans | g' <- apply l to g, ans <- sln ls g', l consistent g']
-
 
 solutions :: Grid -> LineDir -> [[Run]] -> [[LineData]]
 solutions grid dir rows = map (lnData dir) $

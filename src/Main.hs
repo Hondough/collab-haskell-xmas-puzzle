@@ -11,8 +11,8 @@ main = do
   let grid0 = initialGrid rows cols
   let f = solutions grid0
   let rowCols = interleave (f DRow rows) (f DCol cols)
-  print [(dir (head ld), idx (head ld), length ld) | ld <- rowCols]
-  print $ answer rowCols grid0
+  -- print [(dir (head ld), idx (head ld), length ld) | ld <- rowCols]
+  mapM_ print (answer rowCols grid0)
 
 {-
   Data to initialize the puzzle
