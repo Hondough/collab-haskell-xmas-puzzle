@@ -62,6 +62,11 @@ compatibleBlock block gridBlock = block == gridBlock
 compatibleLine :: Line -> Line -> Bool
 compatibleLine ln gridBlocks = and $ V.zipWith compatibleBlock ln gridBlocks
 
+compatibleGrid :: Grid -> LineData -> Bool
+compatibleGrid grid lineDir = compatibleLine (line lineDir) (gridLine grid lineDir) where
+  gridLine grid ld | dir ld == DRow = gridRow grid $ Row (idx ld)
+                   | otherwise = gridCol grid $ Col (idx ld)
+
 gridRow :: Grid -> Row -> Line
 gridRow grid row = grid V.! getRow row
 
@@ -94,6 +99,10 @@ fillRow row line grid = grid V.// [(getRow row, line)]
 fillCol :: Col -> Line -> Grid -> Grid
 fillCol col line grid = foldr (\v acc -> writeBlock (snd v) (fst v) col acc) grid coords where
   coords = zip (map Row [0..]) (V.toList line)
+
+writeLine :: Grid -> LineData -> Grid
+writeLine grid ld | dir ld == DRow = fillRow (Row $ idx ld) (line ld) grid
+                  | otherwise = fillCol (Col $ idx ld) (line ld) grid
 
 -- turn a list of runs into a Line (list of Blocks)
 -- a "run" is an unbroken sequence of black Blocks
@@ -136,6 +145,17 @@ expandRun :: Run -> Int -> [(Line, Int)]
 expandRun r free = [(run n W V.++ run r B, free - n) | n <- [0..free]]
 
 -- Generate solutions
+answer :: [[LineData]] -> Grid -> Maybe Grid
+answer [] grid = Nothing
+answer ([] : more) grid = Just grid
+answer ((sol:solutions):more) grid =
+  if compatibleGrid grid sol
+    then answer more (writeLine grid sol)
+    else answer (solutions:more) grid
+
+-- sln (l:ls) g = [ans | g' <- apply l to g, ans <- sln ls g', l consistent g']
+
+
 solutions :: Grid -> LineDir -> [[Run]] -> [[LineData]]
 solutions grid dir rows = map (lnData dir) $
   zip [0..] (lineSolutions (lineBuilder dir grid) rows) where

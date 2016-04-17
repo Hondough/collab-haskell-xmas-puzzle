@@ -8,11 +8,11 @@ import qualified Data.List as L
 
 main :: IO ()
 main = do
-  let f = solutions $ initialGrid rows cols
+  let grid0 = initialGrid rows cols
+  let f = solutions grid0
   let rowCols = interleave (f DRow rows) (f DCol cols)
   print [(dir (head ld), idx (head ld), length ld) | ld <- rowCols]
-
--- sln (l:ls) g = [ans | g' <- apply l to g, ans <- sln ls g', l consistent g']
+  print $ answer rowCols grid0
 
 {-
   Data to initialize the puzzle
