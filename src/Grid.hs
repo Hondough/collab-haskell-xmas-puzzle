@@ -145,13 +145,13 @@ expandRun :: Run -> Int -> [(Line, Int)]
 expandRun r free = [(run n W V.++ run r B, free - n) | n <- [0..free]]
 
 -- Generate solutions
-answer :: [[LineData]] -> Grid -> Maybe Grid
-answer [] grid = Just grid
-answer ([] : more) grid = answer more grid
-answer ((sol:solutions):more) grid =
+answer :: Grid -> [[LineData]] -> [Grid] -> [Grid]
+answer grid [] acc = grid : acc
+answer grid ([] : more) acc = acc
+answer grid ((sol:solutions):more) acc = let newGrid = writeLine grid sol in
   if compatibleGrid grid sol
-    then answer more (writeLine grid sol)
-    else answer (solutions:more) grid
+    then answer newGrid more (newGrid:acc)
+    else answer grid (solutions:more) acc
 
 -- sln (l:ls) g = [ans | g' <- apply l to g, ans <- sln ls g', l consistent g']
 

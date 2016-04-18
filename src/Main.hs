@@ -3,16 +3,20 @@ module Main where
 import Grid
 import qualified Data.Vector as V
 import qualified Data.List as L
+import Control.Monad
 
 -- http://www.gchq.gov.uk/press_and_media/news_and_features/Pages/Directors-Christmas-puzzle-2015.aspx
 
 main :: IO ()
 main = do
-  let grid0 = initialGrid rows cols
-  let f = solutions grid0
-  let rowCols = interleave (f DRow rows) (f DCol cols)
   -- print [(dir (head ld), idx (head ld), length ld) | ld <- rowCols]
-  mapM_ print (answer rowCols grid0)
+  mapM_ (print . V.head . V.head) (allSolutions rows cols)
+
+allSolutions :: [[Int]] -> [[Int]] -> [Grid]
+allSolutions r c = answer g0 rowCols [] where
+  g0 = initialGrid rows cols
+  f = solutions g0
+  rowCols = interleave (f DRow r) (f DCol c)
 
 {-
   Data to initialize the puzzle
