@@ -28,27 +28,25 @@ instance Ord Block where
   compare W B = LT
   compare _ _ = EQ
 
-data LineDir = DRow | DCol deriving Show
+data LineDir = DRow | DCol deriving (Show, Eq)
 
 data LineData = LineData {
   dir :: LineDir
   ,idx :: Int
-  ,locked :: Bool
   ,line :: Line
   ,moves :: Int
 } deriving Show
 
 instance Eq LineData where
-  (==) a b = moves a == moves b
+  (==) a b = idx a == idx b && dir a == dir b
 
 instance Ord LineData where
-  compare a b = compare (moves a) (moves b)
+  compare a b = compare (idx a) (idx b)
 
 mkLineData :: LineDir -> Int -> [Run] -> LineData
 mkLineData direction index runs = LineData {
   dir = direction
   ,idx = index
-  ,locked = False
   ,line = mkLine runs
   ,moves = freeSpaces 25 runs
 }
@@ -135,6 +133,27 @@ expandLine gridLine (line, x:xs, free) = concatMap (expandLine gridLine . paste 
       | V.null oldLine = newLine
       | otherwise = oldLine V.++ V.singleton W V.++ newLine
 
-
 expandRun :: Run -> Int -> [(Line, Int)]
 expandRun r free = [(run n W V.++ run r B, free - n) | n <- [0..free]]
+
+-- Generate solutions
+solutions :: Grid -> LineDir -> [[Run]] -> [[LineData]]
+solutions grid dir rows = map (lnData dir) $
+  zip [0..] (lineSolutions (lineBuilder dir grid) rows) where
+    lineBuilder DCol = gridColList
+    lineBuilder DRow = gridRowList
+
+lnData :: LineDir -> (Int, [Line]) -> [LineData]
+lnData direction (index, lns) =
+  map (\ln -> LineData {
+        dir = direction
+        ,idx = index
+        ,line = ln
+        ,moves = 0
+        })
+      lns
+
+lineSolutions :: [Line] -> [[Run]] -> [[Line]]
+lineSolutions lns runs = map (map (\(x,_,_) -> x)) $ zipWith expandRuns lns runs where
+  expandRuns gridLine runs = expandLine gridLine
+                                        (V.empty, runs, freeSpaces 25 runs)
