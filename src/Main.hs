@@ -8,29 +8,32 @@ import qualified Data.List as L
 
 main :: IO ()
 main = do
-  let f = solutions $ initialGrid rows cols
-  let rowCols = interleave (f DRow rows) (f DCol cols)
   print [(dir (head ld), idx (head ld), length ld) | ld <- rowCols]
+  print $ length $ finalGrid (take 4 rowCols) [initialGrid rows cols]
 
--- sln (l:ls) g = [ans | g' <- apply l to g, ans <- sln ls g', l consistent g']
+rowCols = interleave (f DRow rows) (f DCol cols)
+  where
+    f = solutions $ initialGrid rows cols
 
-answer :: [Grid]
-answer = finalGrid (initialGrid rows cols) allLines
-
+rawData = zip (repeat DRow) rows ++ zip (repeat DCol) cols
 
 
 --Repeatedly apply solutions against grid to sift down to an answer
-finalGrid :: Grid -> [(LineDir, [Int])] -> [Grid]
-finalGrid g [] = g
-finalGrid g (l:ls) = [ ans | g' <- applyLineToGrid l g
-                            ,ans <- finalGrid g' ls]
+finalGrid :: [[LineData]] -> [Grid] -> [Grid]
+finalGrid [] gs = gs
+finalGrid (ld:lds) gs  = [ ans | g <- gs
+--                              ,ans <- finalGrid lds $ filter (\l -> compatibleLine (line l) $ gridLine g (idx l) (dir l)) $ map (applyLineToGrid g) ld
+                              ,ans <- finalGrid lds $ applyHelper g ld
+                            ]
 
---applyLineToGrid :: [Int] -> LineDir -> Grid
-applyLineToGrid (DRow, rs) g = fillRow (Row r) $ zipWith (mkLineData DRow) [0] [rs]
---applyLineToGrid cs DCol c g = fillCol col l g where
---  col = Col c
---  l = line $ mkLineData DCol c cs
+applyHelper :: Grid -> [LineData] -> [Grid]
+applyHelper g ls = [ applyLineToGrid g l | l <- ls
+                        , compatibleLine (line l) (gridLine g (idx l) (dir l))]
 
+applyLineToGrid :: Grid -> LineData -> Grid
+applyLineToGrid g ld
+  | dir ld == DRow = fillRow (Row $ idx ld) (line ld) g
+  | dir ld == DCol = fillCol (Col $ idx ld) (line ld) g
 
 {-
   Data to initialize the puzzle

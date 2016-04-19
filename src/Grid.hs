@@ -33,6 +33,7 @@ data LineDir = DRow | DCol deriving (Show, Eq)
 data LineData = LineData {
   dir :: LineDir
   ,idx :: Int
+  ,runs :: [Int]
   ,line :: Line
   ,moves :: Int
 } deriving Show
@@ -47,6 +48,7 @@ mkLineData :: LineDir -> Int -> [Run] -> LineData
 mkLineData direction index runs = LineData {
   dir = direction
   ,idx = index
+  ,runs = runs
   ,line = mkLine runs
   ,moves = freeSpaces 25 runs
 }
@@ -61,6 +63,11 @@ compatibleBlock block gridBlock = block == gridBlock
 -- blocks on the grid
 compatibleLine :: Line -> Line -> Bool
 compatibleLine ln gridBlocks = and $ V.zipWith compatibleBlock ln gridBlocks
+
+gridLine :: Grid -> Int -> LineDir -> Line
+gridLine g i d
+  | d == DRow = gridRow g (Row i)
+  | d == DCol = gridCol g (Col i)
 
 gridRow :: Grid -> Row -> Line
 gridRow grid row = grid V.! getRow row
@@ -148,6 +155,7 @@ lnData direction (index, lns) =
   map (\ln -> LineData {
         dir = direction
         ,idx = index
+        ,runs = []
         ,line = ln
         ,moves = 0
         })
