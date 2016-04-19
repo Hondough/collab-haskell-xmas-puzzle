@@ -42,7 +42,7 @@ instance Eq LineData where
   (==) a b = idx a == idx b && dir a == dir b
 
 instance Ord LineData where
-  compare a b = compare (idx a) (idx b)
+  compare a b = compare (moves a) (moves b)
 
 mkLineData :: LineDir -> Int -> [Run] -> LineData
 mkLineData direction index runs = LineData {

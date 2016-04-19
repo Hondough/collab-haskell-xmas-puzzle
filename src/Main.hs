@@ -9,14 +9,15 @@ import qualified Data.List as L
 main :: IO ()
 main = do
   print [(dir (head ld), idx (head ld), length ld) | ld <- rowCols]
-  print $ length $ finalGrid (take 4 rowCols) [initialGrid rows cols]
+  print $ length $ finalGrid (take 9 sortedRowCols) [initialGrid rows cols]
 
-rowCols = interleave (f DRow rows) (f DCol cols)
+rowCols = L.sort $ interleave (f DRow rows) (f DCol cols)
   where
     f = solutions $ initialGrid rows cols
 
 rawData = zip (repeat DRow) rows ++ zip (repeat DCol) cols
 
+sortedRowCols = L.sort rowCols
 
 --Repeatedly apply solutions against grid to sift down to an answer
 finalGrid :: [[LineData]] -> [Grid] -> [Grid]
