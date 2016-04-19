@@ -10,13 +10,24 @@ import Control.Monad
 main :: IO ()
 main = do
   -- print [(dir (head ld), idx (head ld), length ld) | ld <- rowCols]
-  mapM_ (print . V.head . V.head) (allSolutions rows cols)
+  mapM_ print (allSolutions rows cols)
 
 allSolutions :: [[Int]] -> [[Int]] -> [Grid]
 allSolutions r c = answer g0 rowCols [] where
-  g0 = initialGrid rows cols
+  g0 = initialGrid r c
   f = solutions g0
   rowCols = interleave (f DRow r) (f DCol c)
+
+-- Helpers for debugging
+foo n = (head.drop n) (allSolutions rows cols)
+rowCols r c = interleave (f DRow r) (f DCol c) where
+  f = solutions g0
+  g0 = initialGrid r c
+
+-- let g0 = initialGrid rows cols
+-- let as = allSolutions rows cols
+-- let rc = rowCols rows cols
+-- map (compatibleGrid g0) (head rc)
 
 {-
   Data to initialize the puzzle
