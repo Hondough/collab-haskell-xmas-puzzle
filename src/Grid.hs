@@ -153,20 +153,6 @@ answer grid ((sol:solutions):more) acc = let newGrid = writeLine grid sol in
     then answer newGrid more (newGrid:acc)
     else answer grid (solutions:more) acc
 
-answer2 :: Grid -> [[LineData]] -> [LineData] -> [LineData]
-answer2 grid [] acc = acc
-answer2 grid ([] : more) acc = acc
-answer2 grid ((sol:solutions):more) acc = let newGrid = writeLine grid sol in
-  if compatibleGrid grid sol
-    then answer2 newGrid more (sol:acc)
-    else answer2 grid (solutions:more) acc
-
-f [] acc = acc
-f ([]:more) acc = acc
-f ((x:xs):more) acc = if even x then f more (x:acc) else f (xs:more) acc
-
--- sln (l:ls) g = [ans | g' <- apply l to g, ans <- sln ls g', l consistent g']
-
 solutions :: Grid -> LineDir -> [[Run]] -> [[LineData]]
 solutions grid dir rows = map (lnData dir) $
   zip [0..] (lineSolutions (lineBuilder dir grid) rows) where

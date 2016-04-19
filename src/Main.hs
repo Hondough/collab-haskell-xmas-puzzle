@@ -19,10 +19,45 @@ allSolutions r c = answer g0 rowCols [] where
   rowCols = interleave (f DRow r) (f DCol c)
 
 -- Helpers for debugging
-foo n = (head.drop n) (allSolutions rows cols)
+go :: Grid -> [[LineData]] -> [Grid]
+go grid = concatMap (addCompatible grid)
+-- go grid [] acc = acc
+-- go grid ([] : more) acc = acc
+-- go grid ((sol:solutions):more) acc = let newGrid = writeLine grid sol in
+--   if compatibleGrid grid sol
+--     then go newGrid more (newGrid:acc)
+--     else go grid (solutions:more) acc
+
+addCompatible :: Grid -> [LineData] -> [Grid]
+addCompatible g = foldr (\l acc -> if compatibleGrid g l
+                                   then writeLine g l : acc
+                                   else acc) []
+
 rowCols r c = interleave (f DRow r) (f DCol c) where
   f = solutions g0
   g0 = initialGrid r c
+
+answer2 :: Grid -> [[LineData]] -> [LineData] -> [LineData]
+answer2 grid [] acc = acc
+answer2 grid ([] : more) acc = acc
+answer2 grid ((sol:solutions):more) acc = let newGrid = writeLine grid sol in
+  if compatibleGrid grid sol
+    then answer2 newGrid more (sol:acc)
+    else answer2 grid (solutions:more) acc
+
+answer3 :: Grid -> [[LineData]] -> [(LineDir, Int)]
+answer3 grid [] = []
+answer3 grid ([] : more) = []
+answer3 grid ((sol:solutions):more) = let newGrid = writeLine grid sol in
+  if compatibleGrid grid sol
+    then (dir sol, idx sol) : answer3 newGrid more
+    else (dir sol, negate (idx sol)): answer3 grid (solutions:more)
+
+f [] acc = acc
+f ([]:more) acc = acc
+f ((x:xs):more) acc = if even x then f more (x:acc) else f (xs:more) acc
+
+-- sln (l:ls) g = [ans | g' <- apply l to g, ans <- sln ls g', l consistent g']
 
 -- let g0 = initialGrid rows cols
 -- let as = allSolutions rows cols
