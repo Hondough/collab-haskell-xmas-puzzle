@@ -21,12 +21,6 @@ allSolutions r c = answer g0 rowCols [] where
 -- Helpers for debugging
 go :: Grid -> [[LineData]] -> [Grid]
 go grid = concatMap (addCompatible grid)
--- go grid [] acc = acc
--- go grid ([] : more) acc = acc
--- go grid ((sol:solutions):more) acc = let newGrid = writeLine grid sol in
---   if compatibleGrid grid sol
---     then go newGrid more (newGrid:acc)
---     else go grid (solutions:more) acc
 
 addCompatible :: Grid -> [LineData] -> [Grid]
 addCompatible g = foldr (\l acc -> if compatibleGrid g l
