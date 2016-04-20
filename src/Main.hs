@@ -19,8 +19,10 @@ allSolutions r c = answer g0 rowCols [] where
   rowCols = interleave (f DRow r) (f DCol c)
 
 -- Helpers for debugging
-go :: Grid -> [[LineData]] -> [Grid]
-go grid = concatMap (addCompatible grid)
+go :: [Grid] -> [[LineData]] -> [Grid]
+go = foldl (\grids l -> concatMap (`addCompatible` l) grids)
+-- go grids [] = grids
+-- go grids (l:ls) = go (concatMap (`addCompatible` l) grids) ls
 
 addCompatible :: Grid -> [LineData] -> [Grid]
 addCompatible g = foldr (\l acc -> if compatibleGrid g l
@@ -30,14 +32,6 @@ addCompatible g = foldr (\l acc -> if compatibleGrid g l
 rowCols r c = interleave (f DRow r) (f DCol c) where
   f = solutions g0
   g0 = initialGrid r c
-
-answer2 :: Grid -> [[LineData]] -> [LineData] -> [LineData]
-answer2 grid [] acc = acc
-answer2 grid ([] : more) acc = acc
-answer2 grid ((sol:solutions):more) acc = let newGrid = writeLine grid sol in
-  if compatibleGrid grid sol
-    then answer2 newGrid more (sol:acc)
-    else answer2 grid (solutions:more) acc
 
 answer3 :: Grid -> [[LineData]] -> [(LineDir, Int)]
 answer3 grid [] = []
