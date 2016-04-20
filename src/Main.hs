@@ -19,10 +19,14 @@ allSolutions r c = answer g0 rowCols [] where
   rowCols = interleave (f DRow r) (f DCol c)
 
 -- Helpers for debugging
+
+-- take 2 $ foldr (:) [] [0..]
+
 go :: [Grid] -> [[LineData]] -> [Grid]
-go = foldl (\grids l -> concatMap (`addCompatible` l) grids)
--- go grids [] = grids
--- go grids (l:ls) = go (concatMap (`addCompatible` l) grids) ls
+go = foldr (\l grids -> concatMap (`addCompatible` l) grids)
+-- go :: [[LineData]] -> [Grid] -> [Grid]
+-- go [] grids = grids
+-- go (l:ls) grids = go ls (concatMap (`addCompatible` l) grids)
 
 addCompatible :: Grid -> [LineData] -> [Grid]
 addCompatible g = foldr (\l acc -> if compatibleGrid g l
