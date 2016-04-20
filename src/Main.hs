@@ -22,16 +22,26 @@ allSolutions r c = answer g0 rowCols [] where
 
 -- take 2 $ foldr (:) [] [0..]
 
+-- λ let g0 = initialGrid rows cols
+-- λ let rc = rowCols rows cols
+-- λ go [g0] rc
 go :: [Grid] -> [[LineData]] -> [Grid]
 go = foldr (\l grids -> concatMap (`addCompatible` l) grids)
--- go :: [[LineData]] -> [Grid] -> [Grid]
--- go [] grids = grids
--- go (l:ls) grids = go ls (concatMap (`addCompatible` l) grids)
 
 addCompatible :: Grid -> [LineData] -> [Grid]
 addCompatible g = foldr (\l acc -> if compatibleGrid g l
                                    then writeLine g l : acc
                                    else acc) []
+
+-- λ let g0 = initialGrid rows cols
+-- λ let rc = rowCols rows cols
+-- λ expandLineData rc [g0]
+expandLineData :: [[LineData]] -> [Grid] -> [Grid]
+expandLineData [] grids = grids
+expandLineData (l:ls) grids = concatMap (\g -> expandLineData ls (expandGrid g l)) grids
+
+expandGrid :: Grid -> [LineData] -> [Grid]
+expandGrid grid ls = [writeLine grid l | l <- ls, compatibleGrid grid l]
 
 rowCols r c = interleave (f DRow r) (f DCol c) where
   f = solutions g0
