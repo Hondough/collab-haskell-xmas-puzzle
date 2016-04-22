@@ -67,6 +67,19 @@ compatibleGrid grid lineDir = compatibleLine (line lineDir) (gridLine grid lineD
   gridLine grid ld | dir ld == DRow = gridRow grid $ Row (idx ld)
                    | otherwise = gridCol grid $ Col (idx ld)
 
+compatibleGridLine :: ([[Run]],[[Run]]) -> Grid -> LineData -> Bool
+compatibleGridLine runs grid ld = hasSolution slns where
+ slns = compatibleSolutions grid (dir ld) runs
+ hasSolution xs = not $ null xs
+
+compatibleSolutions :: Grid -> LineDir -> ([[Run]],[[Run]]) -> [[LineData]]
+compatibleSolutions grid dir rows = map (lnData dir) $
+ zip [0..] (lineSolutions (lineBuilder dir grid) (d dir rows)) where
+   lineBuilder DCol = gridColList
+   lineBuilder DRow = gridRowList
+   d DRow = fst
+   d _ = snd
+
 gridRow :: Grid -> Row -> Line
 gridRow grid row = grid V.! getRow row
 

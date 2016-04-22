@@ -29,7 +29,7 @@ go :: [Grid] -> [[LineData]] -> [Grid]
 go = foldr (\l grids -> concatMap (`addCompatible` l) grids)
 
 addCompatible :: Grid -> [LineData] -> [Grid]
-addCompatible g = foldr (\l acc -> if compatibleGrid g l
+addCompatible g = foldr (\l acc -> if compatibleGridLine (rows,cols) g l
                                    then writeLine g l : acc
                                    else acc) []
 
@@ -41,7 +41,7 @@ expandLineData [] grids = grids
 expandLineData (l:ls) grids = concatMap (\g -> expandLineData ls (expandGrid g l)) grids
 
 expandGrid :: Grid -> [LineData] -> [Grid]
-expandGrid grid ls = [writeLine grid l | l <- ls, compatibleGrid grid l]
+expandGrid grid ls = [writeLine grid l | l <- ls, compatibleGridLine (rows,cols) grid l]
 
 rowCols r c = interleave (f DRow r) (f DCol c) where
   f = solutions g0
