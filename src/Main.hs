@@ -24,7 +24,7 @@ allSolutions r c = answer g0 rowCols [] where
 
 -- λ let g0 = initialGrid rows cols
 -- λ let rc = rowCols rows cols
--- λ go [g0] rc
+-- λ mapM_ print $ head $ go [g0] rc
 go :: [Grid] -> [[LineData]] -> [Grid]
 go = foldr (\l grids -> concatMap (`addCompatible` l) grids)
 
@@ -35,7 +35,7 @@ addCompatible g = foldr (\l acc -> if compatibleGridLine (rows,cols) g l
 
 -- λ let g0 = initialGrid rows cols
 -- λ let rc = rowCols rows cols
--- λ expandLineData rc [g0]
+-- λ mapM_ print $ head $ expandLineData rc [g0]
 expandLineData :: [[LineData]] -> [Grid] -> [Grid]
 expandLineData [] grids = grids
 expandLineData (l:ls) grids = concatMap (\g -> expandLineData ls (expandGrid g l)) grids
