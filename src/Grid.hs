@@ -166,6 +166,14 @@ answer grid ((sol:solutions):more) acc = let newGrid = writeLine grid sol in
     then answer newGrid more (newGrid:acc)
     else answer grid (solutions:more) acc
 
+btAnswer :: Grid -> [[LineData]] -> [[LineData]] -> [Grid] -> [Grid]
+btAnswer _ _ [] acc = acc
+btAnswer grid pop ([] : more) acc = btAnswer grid pop pop acc
+btAnswer grid pop ((sol:solutions):more) acc = let newGrid = writeLine grid sol in
+  if compatibleGrid grid sol
+    then btAnswer newGrid (solutions:more) more (newGrid:acc)
+    else btAnswer grid (solutions:more) (solutions:more) acc
+
 solutions :: Grid -> LineDir -> [[Run]] -> [[LineData]]
 solutions grid dir rows = map (lnData dir) $
   zip [0..] (lineSolutions (lineBuilder dir grid) rows) where

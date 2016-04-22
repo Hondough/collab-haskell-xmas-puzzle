@@ -10,10 +10,10 @@ import Control.Monad
 main :: IO ()
 main = do
   -- print [(dir (head ld), idx (head ld), length ld) | ld <- rowCols]
-  mapM_ print (allSolutions rows cols)
+  mapM_ print $ head (allSolutions rows cols)
 
 allSolutions :: [[Int]] -> [[Int]] -> [Grid]
-allSolutions r c = answer g0 rowCols [] where
+allSolutions r c = btAnswer g0 [] rowCols [] where
   g0 = initialGrid r c
   f = solutions g0
   rowCols = interleave (f DRow r) (f DCol c)
