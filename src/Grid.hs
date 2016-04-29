@@ -134,11 +134,15 @@ freeSpaces maxLen runs = if len < 0 then 0 else len where
 run :: Int -> Block -> Line
 run = V.replicate
 
-curry3 :: (a -> b -> c -> d) -> (a,b,c) -> d
-curry3 f (a,b,c) = f a b c
+uncurry3 :: (a -> b -> c -> d) -> (a,b,c) -> d
+uncurry3 f (a,b,c) = f a b c
+
+foo :: a -> b -> c -> d
+foo a b c = undefined
 
 interleave :: [a] -> [a] -> [a]
 interleave [] _ = []
+interleave _ [] = []
 interleave (x:xs) ys = x : interleave ys xs
 
 -- recursively expands the input until we have no more runs or free spaces left
