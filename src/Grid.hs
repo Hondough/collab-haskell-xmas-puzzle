@@ -150,6 +150,11 @@ solutions grid dir rows = map (lnData dir) $
     lineBuilder DCol = gridColList
     lineBuilder DRow = gridRowList
 
+sols :: Grid -> LineDir -> Int -> [Run] -> [LineData]
+sols grid dir i row = lnData dir (i, concat $ lineSolutions [(lineBuilder dir grid i)] [row]) where
+  lineBuilder DCol = gridCol (Col i)
+  lineBuilder DRow = gridRow (Row i)
+
 lnData :: LineDir -> (Int, [Line]) -> [LineData]
 lnData direction (index, lns) =
   map (\ln -> LineData {

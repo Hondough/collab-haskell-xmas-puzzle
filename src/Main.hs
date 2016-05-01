@@ -1,6 +1,6 @@
 module Main where
 
-import Grid
+import OldGrid
 import qualified Data.Vector as V
 import qualified Data.List as L
 
@@ -9,15 +9,24 @@ import qualified Data.List as L
 main :: IO ()
 main = do
   print [(dir (head ld), idx (head ld), length ld) | ld <- rowCols]
-  print $ length $ finalGrid (take 9 sortedRowCols) [initialGrid rows cols]
+  print $ length $ finalGrid (take 1 sortedRowCols) [initialGrid rows cols]
 
-rowCols = L.sort $ interleave (f DRow rows) (f DCol cols)
+rowCols = interleave (L.sort (f DRow rows)) $ L.sort (f DCol cols)
   where
     f = solutions $ initialGrid rows cols
 
-rawData = zip (repeat DRow) rows ++ zip (repeat DCol) cols
+rawData :: [LineData]
+rawData = interleave (zipWith (mkLineData DRow) [0..] rows) (zipWith (mkLineData DCol) [0..] cols)
 
 sortedRowCols = L.sort rowCols
+
+rawFinal :: [LineData] -> [Grid] -> [Grid]
+rawFinal [] gs = gs
+rawFinal (ld:lds) gs = [ ans | g <- gs
+--                            ,sol <- sols g d i r
+                            ,ans <- rawFinal lds $ applyHelper g $ sols
+                            ]
+
 
 --Repeatedly apply solutions against grid to sift down to an answer
 finalGrid :: [[LineData]] -> [Grid] -> [Grid]

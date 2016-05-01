@@ -1,81 +1,175 @@
-module OldGrid
-{-
-(
-  Square(B,W)
-  ,Line
-  ,drawLine
-  ,mkLine
-  ,solveLine
-)
--}
-where
+module OldGrid where
 
-import qualified Data.List as L
-import qualified Data.List.Extra as LX
+import qualified Data.Vector as V
 import qualified Safe as SL
-import Data.Maybe
+import Control.Monad
 
--- a Square can be either black or white
-data Square = B | W
+data Block = B | W | U
 
--- make it easier to see
-instance Show Square where
+newtype Row = Row {getRow :: Int} deriving Show
+newtype Col = Col {getCol :: Int} deriving Show
+type Run = Int
+type Line = V.Vector Block
+type Grid = V.Vector Line
+
+instance Show Block where
   show B = "1"
   show W = "_"
+  show U = " "
 
-instance Eq Square where
+instance Eq Block where
   B == B = True
   W == W = True
   _ == _ = False
 
-instance Ord Square where
-  compare W B = GT
-  compare B W = LT
+instance Ord Block where
+  compare B W = GT
+  compare W B = LT
   compare _ _ = EQ
 
--- just a helper to simplify code a bit
-type Line = [Square]
+data LineDir = DRow | DCol deriving (Show, Eq)
 
-drawLine :: Line -> String
-drawLine = foldl (\t v -> t ++ show v) ""
+data LineData = LineData {
+  dir :: LineDir
+  ,idx :: Int
+  ,runs :: [Int]
+  ,ls :: [Line]
+  ,moves :: Int
+} deriving Show
 
--- turn a list of runs into a Line (list of Squares)
--- a "run" is an unbroken sequence of black Squares
-mkLine :: [Int] -> Line
-mkLine [] = []
-mkLine (x:y:xs) = replicate x B ++ [W] ++ mkLine (y:xs)
-mkLine [x] = replicate x B
+instance Eq LineData where
+  (==) a b = idx a == idx b && dir a == dir b
 
--- grow a line by a single white block in all available slots
--- you can add a white at the head, on the end and wherever there
--- is another white block. all runs of black blocks are maintained.
-inc :: Line -> [Line]
-inc xs = L.foldl' addWS [] indices ++ [xs ++ [W]] where
-  addWS acc n = (take n xs ++ [W] ++ drop n xs) : acc
-  indices = leadingEdge False 0 [] xs
-  -- find indices for the start of each "run"
-  leadingEdge _ _ acc [] = acc
-  leadingEdge inRun idx acc (x:xs)
-    | x == B = leadingEdge True (idx+1) (if not inRun then idx:acc else acc) xs
-    | otherwise = leadingEdge False (idx+1) acc xs
+instance Ord LineData where
+  compare a b = compare (moves a) (moves b)
 
-rmDupInc :: [Line] -> [Line]
-rmDupInc = LX.nubOrd . concatMap inc
+-- returns the number of free spaces we have to move blocks around within
+-- within the max length of a line corresponding to the Int list
+freeSpaces :: Int -> [Run] -> Int
+freeSpaces maxLen runs = if len < 0 then 0 else len where
+  len = maxLen - lineLen
+  lineLen = sum runs + length runs - 1
 
-consistent :: Line -> Line -> Bool
-consistent ln mustBlack = and $ zipWith (\a b -> a == W || a == b) ln mustBlack
+mkLineData :: Grid -> LineDir -> Int -> [Run] -> LineData
+mkLineData g direction index runs = LineData {
+  dir = direction
+  ,idx = index
+  ,runs = runs
+  ,ls = validLines
+  ,moves = freeSpaces 25 runs
+}
+  where
+    validLines = sols
 
--- create a list of solutions by growing the previous list of solutions
--- until we reach the desired length for a solution line
-solveLine :: Int -> Line -> [Line]
-solveLine len ln = solutions [ln] where
-  solutions [[]] = [[]]
-  solutions xs
-    | length (head xs) >= len = xs
-    | otherwise = solutions $ rmDupInc xs
+-- check if a block to be placed is compatible with the block on the grid
+compatibleBlock :: Block -> Block -> Bool
+compatibleBlock _ U = True
+compatibleBlock U _ = True
+compatibleBlock block gridBlock = block == gridBlock
 
-nB :: Int -> Line
-nB = flip replicate B
+-- check if the line of blocks to be place is compatible wtih the line of
+-- blocks on the grid
+compatibleLine :: Line -> Line -> Bool
+compatibleLine ln gridBlocks = and $ V.zipWith compatibleBlock ln gridBlocks
 
-nW :: Int -> Line
-nW = flip replicate W
+--compatibleGrid :: Grid -> LineData
+
+gridLine :: Grid -> Int -> LineDir -> Line
+gridLine g i d
+  | d == DRow = gridRow g (Row i)
+  | d == DCol = gridCol g (Col i)
+
+gridRow :: Grid -> Row -> Line
+gridRow grid row = grid V.! getRow row
+
+gridRowList :: Grid -> [Line]
+gridRowList = V.toList
+
+gridCol :: Grid -> Col -> Line
+gridCol grid col = V.map (\l -> l V.! getCol col) grid
+
+gridColList :: Grid -> [Line]
+gridColList grid = map (gridCol grid . Col) [0..(V.length grid - 1)]
+
+-- returns the block at (row,col)
+readBlock :: Row -> Col -> Grid -> Block
+readBlock row col grid = (grid V.! getRow row) V.! getCol col
+
+writeBlock :: Block -> Row -> Col -> Grid -> Grid
+writeBlock block row col grid = grid V.// [(getRow row, vRow V.// [(getCol col, block)])] where
+  vRow = grid V.! getRow row
+
+fill :: Row -> Col -> Grid -> Grid
+fill = writeBlock B
+
+erase :: Row -> Col -> Grid -> Grid
+erase = writeBlock W
+
+fillRow :: Row -> Line -> Grid -> Grid
+fillRow row line grid = grid V.// [(getRow row, line)]
+
+fillCol :: Col -> Line -> Grid -> Grid
+fillCol col line grid = foldr (\v acc -> writeBlock (snd v) (fst v) col acc) grid coords where
+  coords = zip (map Row [0..]) (V.toList line)
+
+-- turn a list of runs into a Line (list of Blocks)
+-- a "run" is an unbroken sequence of black Blocks
+mkLine :: [Run] -> Line
+mkLine [] = V.empty
+mkLine [x] = run x B
+mkLine (x:xs) = run x B V.++ V.singleton W V.++ mkLine xs
+
+run :: Int -> Block -> Line
+run = V.replicate
+
+curry3 :: (a -> b -> c -> d) -> (a,b,c) -> d
+curry3 f (a,b,c) = f a b c
+
+interleave :: [a] -> [a] -> [a]
+interleave [] _ = []
+interleave (x:xs) ys = x : interleave ys xs
+
+
+-- recursively expands the input until we have no more runs or free spaces left
+expandLine :: Line -> (Line, [Run], Int) -> [(Line, [Run], Int)]
+expandLine _ (line, [], 0) = [(line, [], 0)]
+expandLine _ (line, [], free) = [(line V.++ run free W, [], 0)]
+expandLine gridLine (line, x:xs, free) = concatMap (expandLine gridLine . paste line)
+  $ filter compatible (expandRun x free) where
+    compatible (x, _) = compatibleLine (pasteLine line x) gridLine
+    compatibleAlways _ = True
+    paste oldLine (newLine, free) = (pasteLine oldLine newLine, xs, free)
+    pasteLine oldLine newLine
+      | V.null oldLine = newLine
+      | otherwise = oldLine V.++ V.singleton W V.++ newLine
+
+expandRun :: Run -> Int -> [(Line, Int)]
+expandRun r free = [(run n W V.++ run r B, free - n) | n <- [0..free]]
+
+-- Generate solutions
+solutions :: Grid -> LineDir -> [[Run]] -> [[LineData]]
+solutions grid dir rows = map (lnData dir) $
+  zip [0..] (lineSolutions (lineBuilder dir grid) rows) where
+    lineBuilder DCol = gridColList
+    lineBuilder DRow = gridRowList
+
+sols :: Grid -> LineData -> [LineData]
+sols grid dir ld row = lnData dir (i, concat $ lineSolutions [lineBuilder dir] [row]) where
+  lineBuilder DCol = gridCol grid (Col i)
+  lineBuilder DRow = gridRow grid (Row i)
+
+lnData :: LineDir -> (Int, [Line]) -> [LineData]
+lnData direction (index, lns) =
+  map (\ln -> LineData {
+        dir = direction
+        ,idx = index
+        ,runs = []
+        ,line = ln
+        ,moves = 0
+        })
+      lns
+
+lineSolutions :: [Line] -> [[Run]] -> [[Line]]
+lineSolutions lns runs = map (map (\(x,_,_) -> x)) $ zipWith expandRuns lns runs where
+  expandRuns gridLine runs = expandLine gridLine
+                                        (V.empty, runs, freeSpaces 25 runs)
