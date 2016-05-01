@@ -3,13 +3,66 @@ module Main where
 import Grid
 import qualified Data.Vector as V
 import qualified Data.List as L
+import Control.Monad
 
 -- http://www.gchq.gov.uk/press_and_media/news_and_features/Pages/Directors-Christmas-puzzle-2015.aspx
 
 main :: IO ()
 main = do
-  print [(dir (head ld), idx (head ld), length ld) | ld <- rowCols]
-  print $ length $ finalGrid (take 4 rowCols) [initialGrid rows cols]
+
+
+
+
+  -- print [(dir (head ld), idx (head ld), length ld) | ld <- rowCols]
+  mapM_ print $ head (allSolutions rows cols)
+
+allSolutions :: [[Int]] -> [[Int]] -> [Grid]
+allSolutions r c = btAnswer g0 [] rowCols [] where
+  g0 = initialGrid r c
+  f = solutions g0
+  rowCols = interleave (f DRow r) (f DCol c)
+
+-- Helpers for debugging
+
+-- take 2 $ foldr (:) [] [0..]
+
+-- λ let g0 = initialGrid rows cols
+-- λ let rc = rowCols rows cols
+-- λ mapM_ print $ head $ go [g0] rc
+go :: [Grid] -> [[LineData]] -> [Grid]
+go = foldr (\l grids -> concatMap (`addCompatible` l) grids)
+
+addCompatible :: Grid -> [LineData] -> [Grid]
+addCompatible g = foldr (\l acc -> if compatibleGridLine (rows,cols) g l
+                                   then writeLine g l : acc
+                                   else acc) []
+
+-- λ let g0 = initialGrid rows cols
+-- λ let rc = rowCols rows cols
+-- λ mapM_ print $ head $ expandLineData rc [g0]
+expandLineData :: [[LineData]] -> [Grid] -> [Grid]
+expandLineData [] grids = grids
+expandLineData (l:ls) grids = concatMap (\g -> expandLineData ls (expandGrid g l)) grids
+
+expandGrid :: Grid -> [LineData] -> [Grid]
+expandGrid grid ls = [writeLine grid l | l <- ls, compatibleGridLine (rows,cols) grid l]
+
+rowCols r c = interleave (f DRow r) (f DCol c) where
+  f = solutions g0
+  g0 = initialGrid r c
+
+answer3 :: Grid -> [[LineData]] -> [(LineDir, Int)]
+answer3 grid [] = []
+answer3 grid ([] : more) = []
+answer3 grid ((sol:solutions):more) = let newGrid = writeLine grid sol in
+  if compatibleGrid grid sol
+    then (dir sol, idx sol) : answer3 newGrid more
+    else (dir sol, negate (idx sol)): answer3 grid (solutions:more)
+
+f [] acc = acc
+f ([]:more) acc = acc
+f ((x:xs):more) acc = if even x then f more (x:acc) else f (xs:more) acc
+
 
 rowCols = interleave (f DRow rows) (f DCol cols)
   where
@@ -34,6 +87,11 @@ applyLineToGrid :: Grid -> LineData -> Grid
 applyLineToGrid g ld
   | dir ld == DRow = fillRow (Row $ idx ld) (line ld) g
   | dir ld == DCol = fillCol (Col $ idx ld) (line ld) g
+
+-- let g0 = initialGrid rows cols
+-- let as = allSolutions rows cols
+-- let rc = rowCols rows cols
+-- map (compatibleGrid g0) (head rc)
 
 {-
   Data to initialize the puzzle

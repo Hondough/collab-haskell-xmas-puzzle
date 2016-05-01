@@ -48,7 +48,6 @@ mkLineData :: LineDir -> Int -> [Run] -> LineData
 mkLineData direction index runs = LineData {
   dir = direction
   ,idx = index
-  ,runs = runs
   ,line = mkLine runs
   ,moves = freeSpaces 25 runs
 }
@@ -64,10 +63,23 @@ compatibleBlock block gridBlock = block == gridBlock
 compatibleLine :: Line -> Line -> Bool
 compatibleLine ln gridBlocks = and $ V.zipWith compatibleBlock ln gridBlocks
 
-gridLine :: Grid -> Int -> LineDir -> Line
-gridLine g i d
-  | d == DRow = gridRow g (Row i)
-  | d == DCol = gridCol g (Col i)
+compatibleGrid :: Grid -> LineData -> Bool
+compatibleGrid grid lineDir = compatibleLine (line lineDir) (gridLine grid lineDir) where
+  gridLine grid ld | dir ld == DRow = gridRow grid $ Row (idx ld)
+                   | otherwise = gridCol grid $ Col (idx ld)
+
+compatibleGridLine :: ([[Run]],[[Run]]) -> Grid -> LineData -> Bool
+compatibleGridLine runs grid ld = hasSolution slns where
+ slns = compatibleSolutions grid (dir ld) runs
+ hasSolution xs = not $ null xs
+
+compatibleSolutions :: Grid -> LineDir -> ([[Run]],[[Run]]) -> [[LineData]]
+compatibleSolutions grid dir rows = map (lnData dir) $
+ zip [0..] (lineSolutions (lineBuilder dir grid) (d dir rows)) where
+   lineBuilder DCol = gridColList
+   lineBuilder DRow = gridRowList
+   d DRow = fst
+   d _ = snd
 
 gridRow :: Grid -> Row -> Line
 gridRow grid row = grid V.! getRow row
@@ -102,6 +114,10 @@ fillCol :: Col -> Line -> Grid -> Grid
 fillCol col line grid = foldr (\v acc -> writeBlock (snd v) (fst v) col acc) grid coords where
   coords = zip (map Row [0..]) (V.toList line)
 
+writeLine :: Grid -> LineData -> Grid
+writeLine grid ld | dir ld == DRow = fillRow (Row $ idx ld) (line ld) grid
+                  | otherwise = fillCol (Col $ idx ld) (line ld) grid
+
 -- turn a list of runs into a Line (list of Blocks)
 -- a "run" is an unbroken sequence of black Blocks
 mkLine :: [Run] -> Line
@@ -119,13 +135,16 @@ freeSpaces maxLen runs = if len < 0 then 0 else len where
 run :: Int -> Block -> Line
 run = V.replicate
 
-curry3 :: (a -> b -> c -> d) -> (a,b,c) -> d
-curry3 f (a,b,c) = f a b c
+uncurry3 :: (a -> b -> c -> d) -> (a,b,c) -> d
+uncurry3 f (a,b,c) = f a b c
+
+foo :: a -> b -> c -> d
+foo a b c = undefined
 
 interleave :: [a] -> [a] -> [a]
 interleave [] _ = []
+interleave _ [] = []
 interleave (x:xs) ys = x : interleave ys xs
-
 
 -- recursively expands the input until we have no more runs or free spaces left
 expandLine :: Line -> (Line, [Run], Int) -> [(Line, [Run], Int)]
@@ -144,6 +163,22 @@ expandRun :: Run -> Int -> [(Line, Int)]
 expandRun r free = [(run n W V.++ run r B, free - n) | n <- [0..free]]
 
 -- Generate solutions
+answer :: Grid -> [[LineData]] -> [Grid] -> [Grid]
+answer grid [] acc = acc
+answer grid ([] : more) acc = acc
+answer grid ((sol:solutions):more) acc = let newGrid = writeLine grid sol in
+  if compatibleGrid grid sol
+    then answer newGrid more (newGrid:acc)
+    else answer grid (solutions:more) acc
+
+btAnswer :: Grid -> [[LineData]] -> [[LineData]] -> [Grid] -> [Grid]
+btAnswer _ _ [] acc = acc
+btAnswer grid pop ([] : more) acc = btAnswer grid pop pop acc
+btAnswer grid pop ((sol:solutions):more) acc = let newGrid = writeLine grid sol in
+  if compatibleGrid grid sol
+    then btAnswer newGrid (solutions:more) more (newGrid:acc)
+    else btAnswer grid (solutions:more) (solutions:more) acc
+
 solutions :: Grid -> LineDir -> [[Run]] -> [[LineData]]
 solutions grid dir rows = map (lnData dir) $
   zip [0..] (lineSolutions (lineBuilder dir grid) rows) where
@@ -155,7 +190,6 @@ lnData direction (index, lns) =
   map (\ln -> LineData {
         dir = direction
         ,idx = index
-        ,runs = []
         ,line = ln
         ,moves = 0
         })
